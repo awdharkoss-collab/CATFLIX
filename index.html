@@ -8,15 +8,15 @@
         :root { --bg: #08080c; --panel: #12121a; --red: #e50914; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: var(--bg); color: #fff; padding-bottom: 40px; }
-        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(0,0,0,0.92); gap: 10px; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(8,8,12,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); gap: 10px; }
         .nav-left { display: flex; align-items: center; gap: 16px; overflow-x: auto; }
         .logo { font-size: 24px; font-weight: 900; color: var(--red); cursor: pointer; letter-spacing: 1.5px; }
         .nav-link { color: #cbd5e1; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
         .nav-link.active { color: #fff; border-bottom: 2px solid var(--red); }
         input { background: #1c1c26; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 16px; width: 135px; outline: none; }
-        .hero { position: relative; height: 62vh; min-height: 380px; display: flex; align-items: flex-end; padding: 24px; transition: 0.4s; }
-        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.92) 25%, rgba(8,8,12,0.2) 85%), linear-gradient(to top, var(--bg) 8%, transparent 65%); }
-        .hero-content { position: relative; z-index: 10; max-width: 550px; }
+        .hero { position: relative; min-height: 440px; padding: 95px 24px 36px; background-size: cover; background-position: center; display: flex; align-items: flex-end; transition: 0.4s; }
+        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.95) 25%, rgba(8,8,12,0.35) 85%), linear-gradient(to top, var(--bg) 8%, transparent 65%); }
+        .hero-content { position: relative; z-index: 10; max-width: 560px; }
         .hero-title { font-size: 36px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
         .hero-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; line-height: 1.5; }
         .btn-red { background: var(--red); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; margin-right: 8px; }
@@ -24,13 +24,12 @@
         .section { padding: 16px 20px 6px; }
         .sec-title { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
         .row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
-        .poster-card { position: relative; flex: 0 0 150px; height: 225px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.14); cursor: pointer; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; transition: 0.2s; }
+        .poster-card { position: relative; flex: 0 0 150px; border-radius: 10px; overflow: hidden; background: var(--panel); border: 1px solid rgba(255,255,255,0.12); cursor: pointer; transition: 0.2s; }
         .poster-card:hover { transform: scale(1.04); border-color: var(--red); }
-        .poster-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.92) 15%, transparent 70%); }
-        .rating-pill { position: absolute; top: 8px; left: 8px; z-index: 2; background: rgba(0,0,0,0.82); color: #4ade80; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 6px; }
-        .art-icon { position: absolute; top: 34%; left: 50%; transform: translate(-50%, -50%); font-size: 46px; opacity: 0.85; }
-        .poster-meta { position: relative; z-index: 2; font-size: 10px; color: #f87171; font-weight: 800; margin-bottom: 3px; }
-        .poster-name { position: relative; z-index: 2; font-size: 14px; font-weight: 900; line-height: 1.2; color: #fff; }
+        .poster-card img { width: 100%; height: 220px; object-fit: cover; display: block; background: #1e293b; }
+        .rating-pill { position: absolute; top: 8px; left: 8px; z-index: 2; background: rgba(0,0,0,0.85); color: #4ade80; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 6px; }
+        .poster-info { padding: 8px; }
+        .poster-name { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 60; align-items: center; justify-content: center; padding: 16px; }
         .modal-box { background: var(--panel); border: 1px solid var(--red); border-radius: 14px; max-width: 460px; width: 100%; padding: 20px; }
     </style>
@@ -73,24 +72,24 @@
 <script>
     const DATA = {
         trending: [
-            { id: 157336, title: "Yıldızlararası", icon: "🚀", genre: "BİLİM KURGU • 2014", bg: "linear-gradient(135deg, #0f2027, #2c5364)", vote: "8.5", overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu." },
-            { id: 693134, title: "Dune: Bölüm İki", icon: "🏜️", genre: "EPİK MACERA • 2024", bg: "linear-gradient(135deg, #614385, #b4651e)", vote: "8.3", overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir." },
-            { id: 27205, title: "Başlangıç", icon: "🌀", genre: "AKSİYON / GERİLİM", bg: "linear-gradient(135deg, #1a2a6c, #b21f1f)", vote: "8.4", overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir." },
-            { id: 550, title: "Dövüş Kulübü", icon: "🥊", genre: "DRAM • 1999", bg: "linear-gradient(135deg, #3a1c71, #d76d77)", vote: "8.4", overview: "Uykusuzluk çeken bir ofis çalışanı ile sabun satıcısı Tyler Durden'ın yeraltı dövüş kulübü kurmasıyla değişen hayatı." },
-            { id: 155, title: "Kara Şövalye", icon: "🦇", genre: "SUÇ / AKSİYON", bg: "linear-gradient(135deg, #141e30, #243b55)", vote: "8.5", overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır." },
-            { id: 299536, title: "Avengers: Sonsuzluk", icon: "💎", genre: "SÜPER KAHRAMAN", bg: "linear-gradient(135deg, #4b134f, #c94b4b)", vote: "8.3", overview: "Yenilmezler ve müttefikleri, evrenin yarısını yok etmeyi amaçlayan Thanos'u durdurmak için tüm güçlerini birleştirir." }
+            { id: 1, title: "Yıldızlararası", genre: "BİLİM KURGU • 2014", vote: "8.7", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu." },
+            { id: 2, title: "Dune: Çöl Gezegeni 2", genre: "EPİK MACERA • 2024", vote: "8.5", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir." },
+            { id: 3, title: "Başlangıç (Inception)", genre: "AKSİYON / GERİLİM", vote: "8.8", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir." },
+            { id: 4, title: "Kara Şövalye", genre: "SUÇ / AKSİYON • 2008", vote: "9.0", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır." },
+            { id: 5, title: "Dövüş Kulübü", genre: "DRAM • 1999", vote: "8.8", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Uykusuzluk çeken bir ofis çalışanı ile sabun satıcısı Tyler Durden'ın yeraltı dövüş kulübü kurmasıyla değişen hayatı." },
+            { id: 6, title: "Oppenheimer", genre: "BİYOGRAFİ / DRAM", vote: "8.3", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Fizikçi J. Robert Oppenheimer'ın II. Dünya Savaşı sırasında ilk nükleer silahları geliştirme sürecinin çarpıcı hikayesi." }
         ],
         tv: [
-            { id: 1396, title: "Breaking Bad", icon: "⚗️", genre: "SUÇ / DRAM DİZİSİ", bg: "linear-gradient(135deg, #134e5e, #71b280)", vote: "8.9", overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer." },
-            { id: 1399, title: "Game of Thrones", icon: "🐉", genre: "FANTASTİK DİZİ", bg: "linear-gradient(135deg, #232526, #536976)", vote: "8.5", overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi." },
-            { id: 66732, title: "Stranger Things", icon: "🚲", genre: "GİZEM / BİLİM KURGU", bg: "linear-gradient(135deg, #42275a, #734b6d)", vote: "8.6", overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar." },
-            { id: 71446, title: "La Casa de Papel", icon: "🎭", genre: "SOYGUN / GERİLİM", bg: "linear-gradient(135deg, #8e0e00, #1f1c18)", vote: "8.3", overview: "Profesör lakaplı gizemli bir deha, İspanya Kraliyet Darphanesi'ni soymak için sekiz kişilik özel bir ekip kurar." }
+            { id: 7, title: "Breaking Bad", genre: "SUÇ / DRAM DİZİSİ", vote: "9.5", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer." },
+            { id: 8, title: "Game of Thrones", genre: "FANTASTİK DİZİ", vote: "9.2", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi." },
+            { id: 9, title: "Stranger Things", genre: "GİZEM / BİLİM KURGU", vote: "8.7", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar." },
+            { id: 10, title: "Chernobyl", genre: "TARİHİ DRAM DİZİSİ", vote: "9.3", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "1986 yılında Sovyetler Birliği'nde meydana gelen Çernobil nükleer felaketinin ve kahramanların gerçek hikayesi." }
         ],
         anime: [
-            { id: 1429, title: "Attack on Titan", icon: "⚔️", genre: "AKSİYON ANİME", bg: "linear-gradient(135deg, #5a3f37, #2c7744)", vote: "8.7", overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir." },
-            { id: 37854, title: "One Piece", icon: "🏴‍☠️", genre: "MACERA ANİME", bg: "linear-gradient(135deg, #005c97, #363795)", vote: "8.7", overview: "Monkey D. Luffy ve korsan tayfası, efsanevi hazine One Piece'i bulup Korsanlar Kralı olmak için Grand Line'a açılır." },
-            { id: 85937, title: "Demon Slayer", icon: "🔥", genre: "FANTASTİK ANİME", bg: "linear-gradient(135deg, #833ab4, #fd1d1d)", vote: "8.7", overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu tekrar insana çevirmek için iblis avcısı olur." },
-            { id: 95479, title: "Jujutsu Kaisen", icon: "👁️", genre: "DOĞAÜSTÜ ANİME", bg: "linear-gradient(135deg, #0f0c29, #302b63)", vote: "8.6", overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak karanlık büyücülük dünyasına adım atar." }
+            { id: 11, title: "Attack on Titan", genre: "AKSİYON ANİME", vote: "9.1", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir." },
+            { id: 12, title: "Death Note", genre: "GERİLİM / GİZEM ANİME", vote: "9.0", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Adı yazılan kişiyi öldüren gizemli bir defter bulan dahi lise öğrencisi Light Yagami ile dedektif L'in zeka savaşı." },
+            { id: 13, title: "Demon Slayer", genre: "FANTASTİK ANİME", vote: "8.6", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu kurtarmak için iblis avcısı olur." },
+            { id: 14, title: "Jujutsu Kaisen", genre: "DOĞAÜSTÜ ANİME", vote: "8.6", poster: "https://wikimedia.org", bg: "https://wikimedia.org", overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak büyücülük dünyasına adım atar." }
         ]
     };
     let heroItem = DATA.trending.at(0), itemsMap = {};
@@ -99,7 +98,7 @@
     function setHero(item) {
         if (!item) return;
         heroItem = item;
-        document.getElementById("heroBanner").style.background = item.bg;
+        document.getElementById("heroBanner").style.backgroundImage = "url('" + (item.bg || item.poster) + "')";
         document.getElementById("heroTitle").innerText = item.title;
         document.getElementById("heroDesc").innerText = item.overview;
     }
@@ -109,11 +108,10 @@
         for (let i = 0; i < items.length; i++) {
             const it = items.at(i);
             itemsMap[it.id] = it;
-            html += '<div class="poster-card" style="background:' + it.bg + ';" onclick="openDetail(' + it.id + ')">' +
+            html += '<div class="poster-card" onclick="openDetail(' + it.id + ')">' +
                 '<span class="rating-pill">★ ' + it.vote + '</span>' +
-                '<div class="art-icon">' + it.icon + '</div>' +
-                '<div class="poster-meta">' + it.genre + '</div>' +
-                '<div class="poster-name">' + it.title + '</div></div>';
+                '<img src="' + it.poster + '" alt="' + it.title + '">' +
+                '<div class="poster-info"><div class="poster-name">' + it.title + '</div></div></div>';
         }
         return '<div class="section"><div class="sec-title">' + title + '</div><div class="row">' + html + '</div></div>';
     }
