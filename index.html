@@ -70,42 +70,32 @@
 </div>
 
 <script>
-    const FALLBACK = {
+    const DATA = {
         trending: [
-            { id: 1, title: "Yıldızlararası", vote_average: 8.7, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
-            { id: 2, title: "Dune: Çöl Gezegeni 2", vote_average: 8.5, overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
-            { id: 3, title: "Başlangıç (Inception)", vote_average: 8.8, overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
-            { id: 4, title: "Kara Şövalye", vote_average: 9.0, overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" }
+            { id: 1, title: "Yıldızlararası", vote_average: 8.7, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu." },
+            { id: 2, title: "Dune: Çöl Gezegeni 2", vote_average: 8.5, overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir." },
+            { id: 3, title: "Başlangıç (Inception)", vote_average: 8.8, overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir." },
+            { id: 4, title: "Kara Şövalye", vote_average: 9.0, overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır." }
         ],
         tv: [
-            { id: 5, title: "Breaking Bad", vote_average: 9.5, overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
-            { id: 6, title: "Game of Thrones", vote_average: 9.2, overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
-            { id: 7, title: "Stranger Things", vote_average: 8.7, overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" }
+            { id: 5, title: "Breaking Bad", vote_average: 9.5, overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer." },
+            { id: 6, title: "Game of Thrones", vote_average: 9.2, overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi." },
+            { id: 7, title: "Stranger Things", vote_average: 8.7, overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar." }
         ],
         anime: [
-            { id: 8, title: "Attack on Titan", vote_average: 9.1, overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
-            { id: 9, title: "Demon Slayer", vote_average: 8.6, overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu kurtarmak için iblis avcısı olur.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
-            { id: 10, title: "Jujutsu Kaisen", vote_average: 8.6, overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak büyücülük dünyasına adım atar.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" }
+            { id: 8, title: "Attack on Titan", vote_average: 9.1, overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir." },
+            { id: 9, title: "Demon Slayer", vote_average: 8.6, overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu kurtarmak için iblis avcısı olur." },
+            { id: 10, title: "Jujutsu Kaisen", vote_average: 8.6, overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak büyücülük dünyasına adım atar." }
         ]
     };
-    DATA = FALLBACK;
     let heroItem = null, itemsMap = {}, watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
-
-       function resolveImg(path, id) {
-        if (id) return "./posters/" + id + ".jpg";
-        if (!path) return "";
-        if (path.indexOf("http") === 0) return path;
-        return "./posters/" + path.replace(/^\//, "");
-    }
-
 
     function setHero(item) {
         if (!item) return;
         heroItem = item;
-        const imgUrl = resolveImg(item.backdrop_path || item.poster_path);
-        if (imgUrl) document.getElementById("heroBanner").style.backgroundImage = "url('" + imgUrl + "')";
-        document.getElementById("heroTitle").innerText = item.title || item.name || "CATFLIX";
-        document.getElementById("heroDesc").innerText = item.overview || "";
+        document.getElementById("heroBanner").style.backgroundImage = "url('./posters/" + item.id + ".jpg')";
+        document.getElementById("heroTitle").innerText = item.title;
+        document.getElementById("heroDesc").innerText = item.overview;
     }
 
     function buildRow(title, items) {
@@ -113,31 +103,20 @@
         let html = "";
         for (let i = 0; i < items.length; i++) {
             const it = items.at(i);
-            const key = (it.title ? "m_" : "t_") + it.id;
-            itemsMap[key] = it;
-            const name = it.title || it.name || "";
-            const score = it.vote_average ? Number(it.vote_average).toFixed(1) : "8.5";
-            const imgUrl = resolveImg(it.poster_path);
-            html += '<div class="poster-card" onclick="openDetail(\'' + key + '\')">' +
-                '<span class="rating-pill">★ ' + score + '</span>' +
-                '<img src="' + imgUrl + '" alt="' + name.replace(/"/g, "") + '">' +
-                '<div class="poster-info"><div class="poster-name">' + name + '</div></div></div>';
+            itemsMap[it.id] = it;
+            html += '<div class="poster-card" onclick="openDetail(' + it.id + ')">' +
+                '<span class="rating-pill">★ ' + it.vote_average + '</span>' +
+                '<img src="./posters/' + it.id + '.jpg" alt="' + it.title + '">' +
+                '<div class="poster-info"><div class="poster-name">' + it.title + '</div></div></div>';
         }
         return '<div class="section"><div class="sec-title">' + title + '</div><div class="row">' + html + '</div></div>';
     }
 
-    async function loadHome() {
-        try {
-            const res = await fetch("./catalog.json?v=" + Date.now());
-            if (res.ok) {
-                const remote = await res.json();
-                if (remote && remote.trending && remote.trending.length > 0) DATA = remote;
-            }
-        } catch (e) {}
-        setHero((DATA.trending || []).at(0));
+    function loadHome() {
+        setHero(DATA.trending.at(0));
         document.getElementById("catalogContainer").innerHTML =
             buildRow("🔥 Haftanın Trendleri", DATA.trending) +
-            buildRow("🎬 Popüler Filmler", DATA.movies || DATA.trending) +
+            buildRow("🎬 Popüler Filmler", DATA.trending) +
             buildRow("📺 Popüler Diziler", DATA.tv) +
             buildRow("⛩️ Popüler Animeler", DATA.anime);
     }
@@ -148,26 +127,25 @@
         const c = document.getElementById("catalogContainer");
         if (cat === "home") { loadHome(); return; }
         if (cat === "watchlist") { c.innerHTML = watchlist.length ? buildRow("❤️ İzleme Listem", watchlist) : '<div class="section">Listeniz henüz boş.</div>'; return; }
-        if (cat === "movie") { const list = DATA.movies || DATA.trending; setHero(list.at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", list); }
-        if (cat === "tv") { setHero((DATA.tv || []).at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", DATA.tv); }
-        if (cat === "anime") { setHero((DATA.anime || []).at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", DATA.anime); }
+        if (cat === "movie") { setHero(DATA.trending.at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", DATA.trending); }
+        if (cat === "tv") { setHero(DATA.tv.at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", DATA.tv); }
+        if (cat === "anime") { setHero(DATA.anime.at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", DATA.anime); }
     }
 
     function searchCatalog(q) {
         const t = q.trim().toLowerCase();
         if (!t) { loadHome(); return; }
-        const found = Object.values(itemsMap).filter(function(i) { return (i.title || i.name || "").toLowerCase().indexOf(t) !== -1; });
+        const found = Object.values(itemsMap).filter(function(i) { return i.title.toLowerCase().indexOf(t) !== -1; });
         document.getElementById("catalogContainer").innerHTML = buildRow('🔍 "' + q + '" Sonuçları', found);
     }
 
-    function openDetail(key) {
-        const it = itemsMap[key];
+    function openDetail(id) {
+        const it = itemsMap[id];
         if (!it) return;
-        const name = it.title || it.name || "";
-        document.getElementById("mTitle").innerText = name;
-        document.getElementById("mMeta").innerText = "★ " + (it.vote_average ? Number(it.vote_average).toFixed(1) : "8.5");
-        document.getElementById("mOverview").innerText = it.overview || "Türkçe açıklama.";
-        document.getElementById("mTrailerBtn").onclick = function() { window.open("https://youtube.com" + encodeURIComponent(name + " Türkçe fragman"), "_blank"); };
+        document.getElementById("mTitle").innerText = it.title;
+        document.getElementById("mMeta").innerText = "★ " + it.vote_average;
+        document.getElementById("mOverview").innerText = it.overview;
+        document.getElementById("mTrailerBtn").onclick = function() { window.open("https://youtube.com" + encodeURIComponent(it.title + " Türkçe fragman"), "_blank"); };
         document.getElementById("mFavBtn").onclick = function() {
             const idx = watchlist.findIndex(function(w) { return w.id === it.id; });
             if (idx >= 0) watchlist.splice(idx, 1); else watchlist.unshift(it);
@@ -178,8 +156,8 @@
     }
 
     function closeModal() { document.getElementById("detailModal").style.display = "none"; }
-    function watchHeroTrailer() { if (heroItem) window.open("https://youtube.com" + encodeURIComponent((heroItem.title || heroItem.name) + " Türkçe fragman"), "_blank"); }
-    function openHeroDetails() { if (heroItem) { const k = (heroItem.title ? "m_" : "t_") + heroItem.id; itemsMap[k] = heroItem; openDetail(k); } }
+    function watchHeroTrailer() { if (heroItem) window.open("https://youtube.com" + encodeURIComponent(heroItem.title + " Türkçe fragman"), "_blank"); }
+    function openHeroDetails() { if (heroItem) openDetail(heroItem.id); }
 
     loadHome();
 </script>
