@@ -198,16 +198,44 @@
     }
 
 
-    async function tmdb(path) {
+        async function tmdb(path) {
         if (STATE.cache[path]) return STATE.cache[path];
         const sep = path.indexOf("?") !== -1 ? "&" : "?";
         const url = "https://themoviedb.org" + path + sep + "api_key=" + STATE.apiKey + "&language=" + STATE.lang;
         const data = await fetchSmart(url, true);
-        if (!data) { showErr("TMDB API bağlantısı kurulamadı. Ayarlar bölümünden API anahtarınızı kontrol edin."); return null; }
-        showErr("");
-        STATE.cache[path] = data;
-        return data;
+        if (data && data.results) {
+            showErr("");
+            STATE.cache[path] = data;
+            return data;
+        }
+        try {
+            const tvRes = await fetch("https://tvmaze.com");
+            if (tvRes.ok) {
+                const shows = await tvRes.json();
+                showErr("");
+                const mapped = {
+                    results: shows.slice(0, 20).map(function(s) {
+                        return {
+                            id: s.id,
+                            media_type: "tv",
+                            name: s.name,
+                            first_air_date: s.premiered || "2024",
+                            vote_average: (s.rating && s.rating.average) || 8.4,
+                            poster_path: (s.image && s.image.medium) || "",
+                            backdrop_path: (s.image && s.image.original) || "",
+                            overview: (s.summary || "").replace(/<[^>]+>/g, ""),
+                            genre_ids: []
+                        };
+                    })
+                };
+                STATE.cache[path] = mapped;
+                return mapped;
+            }
+        } catch (e) {}
+        showErr("TMDB API bağlantısı kurulamadı. Ayarlar bölümünden API anahtarınızı kontrol edin.");
+        return null;
     }
+
 
     async function loadGenres() {
         const res = await Promise.all([tmdb("/genre/movie/list"), tmdb("/genre/tv/list")]);
@@ -749,9 +777,18 @@
     function toggleFs(id) { const v = document.getElementById(id); if (v && v.requestFullscreen) v.requestFullscreen().catch(function() {}); }
     function closeModal() { document.getElementById("appModal").style.display = "none"; document.getElementById("modalBody").innerHTML = ""; }
 
-    const hlsScript = document.createElement("script");
+        const hlsScript = document.createElement("script");
     hlsScript.src = "https://unpkg.com";
+    hlsScript.onload = async function() {
+        await loadGenres();
+        await goPage("home");
+    };
+    hlsScript.onerror = async function() {
+        await loadGenres();
+        await goPage("home");
+    };
     document.head.appendChild(hlsScript);
+
 
     (async function() { await loadGenres(); await goPage("home"); })();
 </script>
