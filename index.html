@@ -173,11 +173,16 @@
         return "https://wsrv.nl" + size + path;
     }
 
-    async function fetchSmart(url, isJson) {
-        const proxies = [url, "https://codetabs.com" + encodeURIComponent(url), "https://allorigins.win" + encodeURIComponent(url)];
+        async function fetchSmart(url, isJson) {
+        const proxies = [
+            "https://corsproxy.io?" + encodeURIComponent(url),
+            "https://codetabs.com" + encodeURIComponent(url),
+            "https://allorigins.win" + encodeURIComponent(url),
+            url
+        ];
         for (let i = 0; i < proxies.length; i++) {
             const ctrl = new AbortController();
-            const timer = setTimeout(function() { ctrl.abort(); }, 5000);
+            const timer = setTimeout(function() { ctrl.abort(); }, 10000);
             try {
                 const res = await fetch(proxies.at(i), { signal: ctrl.signal });
                 clearTimeout(timer);
@@ -191,6 +196,7 @@
         }
         return null;
     }
+
 
     async function tmdb(path) {
         if (STATE.cache[path]) return STATE.cache[path];
