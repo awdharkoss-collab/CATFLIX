@@ -70,31 +70,14 @@
 </div>
 
 <script>
-    const DATA = {
-        trending: [
-            { id: 1, title: "Yıldızlararası", vote_average: 8.7, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu." },
-            { id: 2, title: "Dune: Çöl Gezegeni 2", vote_average: 8.5, overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir." },
-            { id: 3, title: "Başlangıç (Inception)", vote_average: 8.8, overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir." },
-            { id: 4, title: "Kara Şövalye", vote_average: 9.0, overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır." }
-        ],
-        tv: [
-            { id: 5, title: "Breaking Bad", vote_average: 9.5, overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer." },
-            { id: 6, title: "Game of Thrones", vote_average: 9.2, overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi." },
-            { id: 7, title: "Stranger Things", vote_average: 8.7, overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar." }
-        ],
-        anime: [
-            { id: 8, title: "Attack on Titan", vote_average: 9.1, overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir." },
-            { id: 9, title: "Demon Slayer", vote_average: 8.6, overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu kurtarmak için iblis avcısı olur." },
-            { id: 10, title: "Jujutsu Kaisen", vote_average: 8.6, overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak büyücülük dünyasına adım atar." }
-        ]
-    };
-        let DATA = { trending: [], movies: [], tv: [], anime: [] };
+    let DATA = { trending: [], movies: [], tv: [], anime: [] };
     let heroItem = null, itemsMap = {}, watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
 
     function setHero(item) {
         if (!item) return;
         heroItem = item;
-        document.getElementById("heroBanner").style.backgroundImage = "url('" + (item.bg || item.img) + "')";
+        const bgUrl = item.bg || item.img || ("./posters/" + item.id + ".jpg");
+        document.getElementById("heroBanner").style.backgroundImage = "url('" + bgUrl + "')";
         document.getElementById("heroTitle").innerText = item.title;
         document.getElementById("heroDesc").innerText = item.overview;
     }
@@ -105,17 +88,20 @@
         for (let i = 0; i < items.length; i++) {
             const it = items.at(i);
             itemsMap[it.id] = it;
+            const imgUrl = it.img || ("./posters/" + it.id + ".jpg");
             html += '<div class="poster-card" onclick="openDetail(' + it.id + ')">' +
                 '<span class="rating-pill">★ ' + it.vote_average + '</span>' +
-                '<img src="' + it.img + '" alt="' + it.title.replace(/"/g, "") + '">' +
+                '<img src="' + imgUrl + '" alt="' + it.title.replace(/"/g, "") + '">' +
                 '<div class="poster-info"><div class="poster-name">' + it.title + '</div></div></div>';
         }
         return '<div class="section"><div class="sec-title">' + title + '</div><div class="row">' + html + '</div></div>';
     }
 
     async function loadHome() {
-        const res = await fetch("./catalog.json?v=" + Date.now());
-        if (res.ok) DATA = await res.json();
+        try {
+            const res = await fetch("./catalog.json?v=" + Date.now());
+            if (res.ok) DATA = await res.json();
+        } catch (e) {}
         setHero((DATA.trending || []).at(0));
         document.getElementById("catalogContainer").innerHTML =
             buildRow("🔥 Haftanın Trendleri", DATA.trending) +
@@ -124,16 +110,15 @@
             buildRow("⛩️ Popüler Animeler", DATA.anime);
     }
 
-
     function switchCat(el, cat) {
         document.querySelectorAll(".nav-link").forEach(function(n) { n.classList.remove("active"); });
         el.classList.add("active");
         const c = document.getElementById("catalogContainer");
         if (cat === "home") { loadHome(); return; }
         if (cat === "watchlist") { c.innerHTML = watchlist.length ? buildRow("❤️ İzleme Listem", watchlist) : '<div class="section">Listeniz henüz boş.</div>'; return; }
-        if (cat === "movie") { setHero(DATA.trending.at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", DATA.trending); }
-        if (cat === "tv") { setHero(DATA.tv.at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", DATA.tv); }
-        if (cat === "anime") { setHero(DATA.anime.at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", DATA.anime); }
+        if (cat === "movie") { setHero((DATA.movies || []).at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", DATA.movies); }
+        if (cat === "tv") { setHero((DATA.tv || []).at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", DATA.tv); }
+        if (cat === "anime") { setHero((DATA.anime || []).at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", DATA.anime); }
     }
 
     function searchCatalog(q) {
