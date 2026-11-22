@@ -1,66 +1,103 @@
-name: CATFLIX Gercek Afisler
+name: CATFLIX Tam Katalog ve TV
 on:
   push:
     branches: [ "main" ]
+  schedule:
+    - cron: '0 */12 * * *'
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  posters:
+  build_catalog:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: |
           mkdir -p posters
-          curl -sSL "https://yts.mx" -o m1.json
-          curl -sSL "https://yts.mx" -o m2.json
-          curl -sSL "https://jikan.moe" -o anime.json
-          cat << 'EOF' > make_cat.py
-          import json, subprocess
+          curl -sSL "https://github.io" -o tr_channels.m3u
+          cat << 'EOF' > sync_all.py
+          import urllib.request, urllib.parse, json, re, subprocess
 
-          def load_j(fn):
-              try: return json.load(open(fn, encoding="utf-8"))
-              except: return {}
+          API_KEY = "4ef0be86342c15f9d510aef2774dfe78"
 
-          def dl(url, name):
-              if not url: return ""
-              subprocess.run(["curl", "-sSL", url, "-o", "posters/" + name])
-              return "./posters/" + name
+          def fetch_tmdb(endpoint):
+              sep = "&" if "?" in endpoint else "?"
+              target = f"https://themoviedb.org{endpoint}{sep}api_key={API_KEY}&language=tr-TR"
+              for url in [
+                  target,
+                  "https://allorigins.win" + urllib.parse.quote(target, safe=""),
+                  "https://codetabs.com" + urllib.parse.quote(target, safe="")
+              ]:
+                  try:
+                      out = subprocess.check_output(["curl", "-sSL", "-A", "Mozilla/5.0", "--max-time", "15", url]).decode("utf-8", "ignore")
+                      data = json.loads(out)
+                      if data.get("results"):
+                          return data["results"][:18]
+                  except:
+                      pass
+              return []
 
-          m1 = ((load_j("m1.json").get("data") or {}).get("movies")) or []
-          m2 = ((load_j("m2.json").get("data") or {}).get("movies")) or []
-          animes = (load_j("anime.json").get("data")) or []
+          def download_img(path, fname):
+              if not path:
+                  return ""
+              for base in ["https://tmdb.org", "https://wsrv.nl/?url=https://tmdb.org"]:
+                  try:
+                      subprocess.run(["curl", "-sSL", "-A", "Mozilla/5.0", "--max-time", "12", base + path, "-o", "posters/" + fname], check=True)
+                      if open("posters/" + fname, "rb").read(4)[:2] in [b"\xff\xd8", b"\x89P"]:
+                          return "./posters/" + fname
+                  except:
+                      pass
+              return ""
 
-          out = {"trending": [], "movies": [], "tv": [], "anime": []}
+          sections = {
+              "trending": fetch_tmdb("/trending/all/week"),
+              "movies": fetch_tmdb("/movie/popular"),
+              "top_movies": fetch_tmdb("/movie/top_rated"),
+              "tv": fetch_tmdb("/tv/popular"),
+              "top_tv": fetch_tmdb("/tv/top_rated"),
+              "anime": fetch_tmdb("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc"),
+              "action": fetch_tmdb("/discover/movie?with_genres=28&sort_by=popularity.desc"),
+              "scifi": fetch_tmdb("/discover/movie?with_genres=878&sort_by=popularity.desc")
+          }
+
+          catalog = {}
           idx = 1
+          for sec, items in sections.items():
+              catalog[sec] = []
+              for it in items:
+                  p_local = download_img(it.get("poster_path"), f"p_{idx}.jpg")
+                  b_local = download_img(it.get("backdrop_path"), f"b_{idx}.jpg")
+                  if p_local:
+                      catalog[sec].append({
+                          "id": idx,
+                          "title": it.get("title") or it.get("name") or "",
+                          "year": (it.get("release_date") or it.get("first_air_date") or "")[:4],
+                          "vote": round(float(it.get("vote_average") or 8.0), 1),
+                          "overview": it.get("overview") or "Türkçe özet bilgisi.",
+                          "poster": p_local,
+                          "backdrop": b_local or p_local
+                      })
+                      idx += 1
 
-          for m in m1[:10]:
-              img = dl(m.get("medium_cover_image") or m.get("large_cover_image"), f"real_{idx}.jpg")
-              bg = dl(m.get("background_image_original") or m.get("large_cover_image"), f"real_bg_{idx}.jpg")
-              out["trending"].append({"id": idx, "title": m.get("title", ""), "vote_average": m.get("rating", 8.2), "overview": m.get("summary") or "Popüler sinema filmi.", "img": img, "bg": bg or img})
-              idx += 1
+          channels = []
+          if open("tr_channels.m3u", encoding="utf-8", errors="ignore"):
+              lines = open("tr_channels.m3u", encoding="utf-8", errors="ignore").read().splitlines()
+              cur_name, cur_logo = "", ""
+              for line in lines:
+                  if line.startswith("#EXTINF:"):
+                      m_logo = re.search(r'tvg-logo="([^"]*)"', line)
+                      cur_logo = m_logo.group(1) if m_logo else ""
+                      cur_name = line.split(",")[-1].strip()
+                  elif line.startswith("http") and cur_name:
+                      channels.append({"name": cur_name, "logo": cur_logo, "url": line.strip()})
+                      cur_name = ""
 
-          for m in m2[:12]:
-              img = dl(m.get("medium_cover_image") or m.get("large_cover_image"), f"real_{idx}.jpg")
-              out["movies"].append({"id": idx, "title": m.get("title", ""), "vote_average": m.get("rating", 8.5), "overview": m.get("summary") or "Yüksek puanlı film.", "img": img, "bg": img})
-              idx += 1
-
-          for m in m1[10:20]:
-              img = dl(m.get("medium_cover_image") or m.get("large_cover_image"), f"real_{idx}.jpg")
-              out["tv"].append({"id": idx, "title": m.get("title", ""), "vote_average": m.get("rating", 8.1), "overview": m.get("summary") or "Öne çıkan yapım.", "img": img, "bg": img})
-              idx += 1
-
-          for a in animes[:12]:
-              u = ((a.get("images") or {}).get("jpg") or {}).get("large_image_url") or ""
-              img = dl(u, f"real_{idx}.jpg")
-              out["anime"].append({"id": idx, "title": a.get("title_english") or a.get("title", ""), "vote_average": a.get("score") or 8.6, "overview": a.get("synopsis") or "Popüler anime.", "img": img, "bg": img})
-              idx += 1
-
-          open("catalog.json", "w", encoding="utf-8").write(json.dumps(out, ensure_ascii=False))
+          catalog["channels"] = channels[:250]
+          open("catalog.json", "w", encoding="utf-8").write(json.dumps(catalog, ensure_ascii=False))
           EOF
-          python3 make_cat.py
+          python3 sync_all.py
           git config user.name "Bot"
           git config user.email "bot@catflix.local"
           git add posters catalog.json
-          git commit -m "gercek_afis_paketi" || exit 0
+          git commit -m "tam_katalog_ve_canli_tv" || exit 0
           git push
