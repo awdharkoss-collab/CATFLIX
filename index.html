@@ -865,11 +865,12 @@
     function setHlsAudio(val) { if (STATE.hls) STATE.hls.audioTrack = Number(val); }
     function togglePip(id) { const v = document.getElementById(id); if (v && document.pictureInPictureEnabled) v.requestPictureInPicture().catch(function() {}); }
     function toggleFs(id) { const v = document.getElementById(id); if (v && v.requestFullscreen) v.requestFullscreen().catch(function() {}); }
-    function closeModal() { document.getElementById("appModal").style.display = "none"; document.getElementById("modalBody").innerHTML = ""; }
-    
+        function closeModal() { document.getElementById("appModal").style.display = "none"; document.getElementById("modalBody").innerHTML = ""; }
+    }
+    }
 
     const hlsScript = document.createElement("script");
- hlsScript.src = "https://" + "cdnjs." + "://cloudflare.com";
+    hlsScript.src = "https://" + "cdnjs." + "://cloudflare.com";
     hlsScript.onload = async function() { await loadGenres(); await goPage("home"); };
     hlsScript.onerror = async function() { await loadGenres(); await goPage("home"); };
     document.head.appendChild(hlsScript);
