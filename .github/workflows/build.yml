@@ -23,11 +23,11 @@ jobs:
           cp index.html www/index.html
           npx --yes cap init "CATFLIX" "com.catflix.app" --web-dir www
           npx --yes cap add android
-          python3 -c '
+          python3 -c "
           from PIL import Image, ImageDraw
           import glob
-          for path in glob.glob("android/app/src/main/res/mipmap-*/ic_launcher*.png"):
-              im = Image.open(path).convert("RGBA")
+          for path in glob.glob('android/app/src/main/res/mipmap-*/ic_launcher*.png'):
+              im = Image.open(path).convert('RGBA')
               w, h = im.size
               draw = ImageDraw.Draw(im)
               draw.rectangle([0, 0, w, h], fill=(8, 8, 8, 255))
@@ -36,9 +36,10 @@ jobs:
               draw.arc([pad + 2, pad + 3, w - pad + 2, h - pad + 3], start=42, end=318, fill=(130, 0, 10, 255), width=thick)
               draw.arc([pad, pad, w - pad, h - pad], start=42, end=318, fill=(240, 0, 22, 255), width=thick)
               im.save(path)
-          m = "android/app/src/main/AndroidManifest.xml"
-          open(m, "w").write(open(m).read().replace("<application", "<application android:usesCleartextTraffic=\"true\""))
-          '
+          m = 'android/app/src/main/AndroidManifest.xml'
+          txt = open(m).read().replace('<application', '<application android:usesCleartextTraffic=\'true\'')
+          open(m, 'w').write(txt)
+          "
           npx --yes cap copy android
           cd android && chmod +x gradlew && ./gradlew assembleDebug
       - name: CATFLIX APK Yukle
