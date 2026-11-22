@@ -12,69 +12,48 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           mkdir -p posters
-          cat << 'EOF' > fetch_cat.py
-          import urllib.request, json, re
-          HDR = {"User-Agent": "Mozilla/5.0"}
-          def fetch_json(url):
-              try:
-                  req = urllib.request.Request(url, headers=HDR)
-                  return json.loads(urllib.request.urlopen(req, timeout=15).read().decode())
-              except Exception as e:
-                  print("err", url, e)
-                  return None
+          curl -s "https://tvmaze.com" -o shows.json
+          curl -s "https://jikan.moe" -o anime.json
+          cat << 'EOF' > parse.py
+          import json, re, subprocess
+          shows = json.load(open("shows.json"))[:30]
+          animes = json.load(open("anime.json")).get("data", [])
 
-          shows = fetch_json("https://tvmaze.com") or []
-          anime_res = fetch_json("https://jikan.moe") or {}
-          animes = anime_res.get("data", []) if isinstance(anime_res, dict) else []
+          def grab(img_url, fn):
+              if not img_url: return ""
+              subprocess.run(["curl", "-sL", img_url, "-o", "posters/" + fn])
+              return "/" + fn
 
-          def map_show(s, idx):
-              img_url = (s.get("image") or {}).get("original") or (s.get("image") or {}).get("medium") or ""
-              fn = f"show_{s.get('id', idx)}.jpg"
-              if img_url:
-                  try:
-                      r = urllib.request.Request(img_url, headers=HDR)
-                      open("posters/" + fn, "wb").write(urllib.request.urlopen(r, timeout=15).read())
-                  except:
-                      fn = ""
-              return {
-                  "id": s.get("id", idx),
-                  "title": s.get("name", ""),
+          s_list = []
+          for s in shows:
+              img = (s.get("image") or {}).get("original") or (s.get("image") or {}).get("medium") or ""
+              p = grab(img, f"s_{s['id']}.jpg")
+              s_list.append({
+                  "id": s["id"],
+                  "title": s["name"],
                   "vote_average": (s.get("rating") or {}).get("average") or 8.4,
                   "overview": re.sub(r"<[^>]*>", "", s.get("summary") or "Popüler yapım."),
-                  "poster_path": "/" + fn if fn else "",
-                  "backdrop_path": "/" + fn if fn else ""
-              }
+                  "poster_path": p,
+                  "backdrop_path": p
+              })
 
-          def map_anime(a, idx):
-              img_url = ((a.get("images") or {}).get("jpg") or {}).get("large_image_url") or ""
-              fn = f"anime_{a.get('mal_id', idx)}.jpg"
-              if img_url:
-                  try:
-                      r = urllib.request.Request(img_url, headers=HDR)
-                      open("posters/" + fn, "wb").write(urllib.request.urlopen(r, timeout=15).read())
-                  except:
-                      fn = ""
-              return {
-                  "id": a.get("mal_id", idx),
+          a_list = []
+          for a in animes:
+              img = ((a.get("images") or {}).get("jpg") or {}).get("large_image_url") or ""
+              p = grab(img, f"a_{a['mal_id']}.jpg")
+              a_list.append({
+                  "id": a["mal_id"],
                   "title": a.get("title_english") or a.get("title", ""),
                   "vote_average": a.get("score") or 8.6,
                   "overview": a.get("synopsis") or "Popüler anime yapımı.",
-                  "poster_path": "/" + fn if fn else "",
-                  "backdrop_path": "/" + fn if fn else ""
-              }
+                  "poster_path": p,
+                  "backdrop_path": p
+              })
 
-          mapped_shows = [map_show(s, i) for i, s in enumerate(shows[:30])]
-          mapped_animes = [map_anime(a, i) for i, a in enumerate(animes)]
-
-          data = {
-              "trending": mapped_shows[:10],
-              "movies": mapped_shows[10:20],
-              "tv": mapped_shows[20:30],
-              "anime": mapped_animes
-          }
+          data = {"trending": s_list[:10], "movies": s_list[10:20], "tv": s_list[20:30], "anime": a_list}
           open("catalog.json", "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False))
           EOF
-          python3 fetch_cat.py
+          python3 parse.py
           git config user.name "Bot"
           git config user.email "bot@catflix.local"
           git add posters catalog.json
