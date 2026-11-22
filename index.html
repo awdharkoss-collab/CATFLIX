@@ -117,7 +117,8 @@
             { id: "t4", title: "Kara Şövalye", tag: "SUÇ / AKSİYON", year: "2008", vote: "9.0", overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır." },
             { id: "t5", title: "Oppenheimer", tag: "BİYOGRAFİ / DRAM", year: "2023", vote: "8.3", overview: "Fizikçi J. Robert Oppenheimer'ın ilk nükleer silahları geliştirme sürecinin çarpıcı hikayesi." }
         ],
-        movies: [], tv: [
+        movies: [],
+        tv: [
             { id: "d1", title: "Breaking Bad", tag: "SUÇ / DRAM DİZİSİ", year: "2008", vote: "9.5", overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer." },
             { id: "d2", title: "Game of Thrones", tag: "FANTASTİK DİZİ", year: "2011", vote: "9.2", overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi." },
             { id: "d3", title: "Stranger Things", tag: "GİZEM / BİLİM KURGU", year: "2016", vote: "8.7", overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler gün yüzüne çıkar." },
@@ -130,7 +131,7 @@
         ]
     };
     DB.movies = DB.trending;
-    let allMap = {}, hls = null, curHero = DB.trending[0];
+    let allMap = {}, hls = null, curHero = DB.trending;
     let watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
     const GRADIENTS = [
         "linear-gradient(145deg,#1e1b4b,#7f1d1d)",
@@ -256,7 +257,6 @@
     }
 
     function loadHome() { paintScreen(); syncLiveData(); }
-
     function switchCat(el, cat) {
         document.querySelectorAll(".nav-link").forEach(n => n.classList.remove("active"));
         el.classList.add("active");
@@ -302,13 +302,8 @@
         document.getElementById("mFavBtn").onclick = () => addToFav(m);
         document.getElementById("mTrailerBtn").onclick = () => window.open("https://youtube.com" + encodeURIComponent(m.title + " Türkçe fragman"), "_blank");
         const vid = document.getElementById("videoPlayer");
-        if (m.video) {
-            vid.style.display = "block";
-            vid.src = m.video;
-            vid.play().catch(() => {});
-        } else {
-            vid.style.display = "none";
-        }
+        if (m.video) { vid.style.display = "block"; vid.src = m.video; vid.play().catch(() => {}); }
+        else { vid.style.display = "none"; }
         document.getElementById("detailModal").style.display = "flex";
     }
 
@@ -322,23 +317,21 @@
         const vid = document.getElementById("videoPlayer");
         vid.style.display = "block";
         if (window.Hls && Hls.isSupported()) {
-            hls = new Hls();
-            hls.loadSource(url);
-            hls.attachMedia(vid);
+            hls = new Hls(); hls.loadSource(url); hls.attachMedia(vid);
             hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(() => {}));
-        } else {
-            vid.src = url;
-            vid.play().catch(() => {});
-}
-document.getElementById("detailModal").style.display = "flex";
-}
-function stopPlayer() {
-const video = document.getElementById("videoPlayer");
-video.pause(); video.src = "";
-document.getElementById("mTrailerBtn").style.display = "inline-block";
-if (hls) { hls.destroy(); hls = null; }
-}
-function closeModal() { stopPlayer(); document.getElementById("detailModal").style.display = "none"; }
+        } else { vid.src = url; vid.play().catch(() => {}); }
+        document.getElementById("detailModal").style.display = "flex";
+    }
+
+    function stopPlayer() {
+        const video = document.getElementById("videoPlayer");
+        video.pause(); video.src = "";
+        document.getElementById("mTrailerBtn").style.display = "inline-block";
+        if (hls) { hls.destroy(); hls = null; }
+    }
+
+    function closeModal() { stopPlayer(); document.getElementById("detailModal").style.display = "none"; }
+
     const s = document.createElement("script");
     s.src = "https://unpkg.com";
     document.head.appendChild(s);
@@ -347,4 +340,3 @@ function closeModal() { stopPlayer(); document.getElementById("detailModal").sty
 </script>
 </body>
 </html>
-
