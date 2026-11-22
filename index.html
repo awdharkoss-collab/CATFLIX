@@ -15,7 +15,7 @@
         .nav-link.active { color: #fff; border-bottom: 2px solid var(--red); }
         input { background: #1c1c26; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 16px; width: 135px; outline: none; }
         .hero { position: relative; min-height: 360px; padding: 110px 24px 36px; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; }
-        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.94) 28%, rgba(8,8,12,0.2) 85%), linear-gradient(to top, var(--bg) 8%, transparent 65%); }
+        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.94) 28%, rgba(8,8,12,0.25) 85%), linear-gradient(to top, var(--bg) 8%, transparent 65%); }
         .hero-content { position: relative; z-index: 10; max-width: 560px; }
         .hero-title { font-size: 36px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
         .hero-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; line-height: 1.5; }
@@ -70,19 +70,38 @@
 </div>
 
 <script>
-    let DATA = {
+    const FALLBACK = {
         trending: [
-            { id: 157336, title: "Yıldızlararası", vote_average: 8.7, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu.", poster_path: "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", backdrop_path: "/xJHokMbljvjADYdit5fK5VQsXEG.jpg" }
+            { id: 1, title: "Yıldızlararası", vote_average: 8.7, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
+            { id: 2, title: "Dune: Çöl Gezegeni 2", vote_average: 8.5, overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
+            { id: 3, title: "Başlangıç (Inception)", vote_average: 8.8, overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
+            { id: 4, title: "Kara Şövalye", vote_average: 9.0, overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" }
         ],
-        movies: [], tv: [], anime: []
+        tv: [
+            { id: 5, title: "Breaking Bad", vote_average: 9.5, overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
+            { id: 6, title: "Game of Thrones", vote_average: 9.2, overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
+            { id: 7, title: "Stranger Things", vote_average: 8.7, overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" }
+        ],
+        anime: [
+            { id: 8, title: "Attack on Titan", vote_average: 9.1, overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
+            { id: 9, title: "Demon Slayer", vote_average: 8.6, overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu kurtarmak için iblis avcısı olur.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" },
+            { id: 10, title: "Jujutsu Kaisen", vote_average: 8.6, overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak büyücülük dünyasına adım atar.", poster_path: "https://unsplash.com", backdrop_path: "https://unsplash.com" }
+        ]
     };
+    DATA = FALLBACK;
     let heroItem = null, itemsMap = {}, watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
+
+    function resolveImg(path) {
+        if (!path) return "";
+        if (path.indexOf("http") === 0) return path;
+        return "./posters/" + path.replace(/^\//, "");
+    }
 
     function setHero(item) {
         if (!item) return;
         heroItem = item;
-        const p = (item.backdrop_path || item.poster_path || "").replace(/^\//, "");
-        if (p) document.getElementById("heroBanner").style.backgroundImage = "url('./posters/" + p + "')";
+        const imgUrl = resolveImg(item.backdrop_path || item.poster_path);
+        if (imgUrl) document.getElementById("heroBanner").style.backgroundImage = "url('" + imgUrl + "')";
         document.getElementById("heroTitle").innerText = item.title || item.name || "CATFLIX";
         document.getElementById("heroDesc").innerText = item.overview || "";
     }
@@ -96,23 +115,27 @@
             itemsMap[key] = it;
             const name = it.title || it.name || "";
             const score = it.vote_average ? Number(it.vote_average).toFixed(1) : "8.5";
-            const p = (it.poster_path || "").replace(/^\//, "");
+            const imgUrl = resolveImg(it.poster_path);
             html += '<div class="poster-card" onclick="openDetail(\'' + key + '\')">' +
                 '<span class="rating-pill">★ ' + score + '</span>' +
-                '<img src="./posters/' + p + '" alt="' + name.replace(/"/g, "") + '">' +
+                '<img src="' + imgUrl + '" alt="' + name.replace(/"/g, "") + '">' +
                 '<div class="poster-info"><div class="poster-name">' + name + '</div></div></div>';
         }
         return '<div class="section"><div class="sec-title">' + title + '</div><div class="row">' + html + '</div></div>';
     }
+
     async function loadHome() {
         try {
             const res = await fetch("./catalog.json?v=" + Date.now());
-            if (res.ok) DATA = await res.json();
+            if (res.ok) {
+                const remote = await res.json();
+                if (remote && remote.trending && remote.trending.length > 0) DATA = remote;
+            }
         } catch (e) {}
         setHero((DATA.trending || []).at(0));
         document.getElementById("catalogContainer").innerHTML =
             buildRow("🔥 Haftanın Trendleri", DATA.trending) +
-            buildRow("🎬 Popüler Filmler", DATA.movies) +
+            buildRow("🎬 Popüler Filmler", DATA.movies || DATA.trending) +
             buildRow("📺 Popüler Diziler", DATA.tv) +
             buildRow("⛩️ Popüler Animeler", DATA.anime);
     }
@@ -123,7 +146,7 @@
         const c = document.getElementById("catalogContainer");
         if (cat === "home") { loadHome(); return; }
         if (cat === "watchlist") { c.innerHTML = watchlist.length ? buildRow("❤️ İzleme Listem", watchlist) : '<div class="section">Listeniz henüz boş.</div>'; return; }
-        if (cat === "movie") { setHero((DATA.movies || []).at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", DATA.movies); }
+        if (cat === "movie") { const list = DATA.movies || DATA.trending; setHero(list.at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", list); }
         if (cat === "tv") { setHero((DATA.tv || []).at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", DATA.tv); }
         if (cat === "anime") { setHero((DATA.anime || []).at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", DATA.anime); }
     }
