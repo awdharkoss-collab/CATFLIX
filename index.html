@@ -127,16 +127,14 @@
         lang: localStorage.getItem("catflix_lang") || "tr-TR",
         epgUrl: localStorage.getItem("catflix_epg_url") || "",
         m3uLists: JSON.parse(localStorage.getItem("catflix_m3u_lists") || "null") || [
-            { id: "def1", name: "Türkiye Açık Yayınlar", url: "https://github.io", enabled: true }
+            { id: "def1", name: "Türkiye Açık Yayınlar", url: "https://" + "iptv-org.github.io" + "/iptv/countries/tr.m3u", enabled: true }
         ],
-                        channels: JSON.parse(localStorage.getItem("catflix_channels_v2") || "null") || [
-            { id: "ch1", name: "NASA TV (4K Uzay)", group: "Belgesel", logo: "", url: "https://akamaized.net" },
-            { id: "ch2", name: "Red Bull TV (Spor)", group: "Spor", logo: "", url: "https://akamaized.net" },
-            { id: "ch3", name: "DW English (Haber)", group: "Haber", logo: "", url: "https://akamaized.net" },
-            { id: "ch4", name: "France 24 (Haber)", group: "Uluslararası", logo: "", url: "https://france24.com" }
+        channels: JSON.parse(localStorage.getItem("catflix_channels_v3") || "null") || [
+            { id: "ch1", name: "Red Bull TV (Canlı Spor)", group: "Spor", logo: "", url: "https://" + "rbmn-live.akamaized.net" + "/hls/live/590964/BoRB-AT/master.m3u8" },
+            { id: "ch2", name: "DW English (Canlı Haber)", group: "Haber", logo: "", url: "https://" + "dwamdstream102.akamaized.net" + "/hls/live/2015525/dwstream102/index.m3u8" },
+            { id: "ch3", name: "France 24 (Canlı Haber)", group: "Uluslararası", logo: "", url: "https://" + "://france24.com" + "/live/F24_EN_HI_HLS/live_web.m3u8" },
+            { id: "ch4", name: "Mux Test Yayını (Full HD)", group: "Sinema", logo: "", url: "https://" + "test-streams.mux.dev" + "/x36xhzz/x36xhzz.m3u8" }
         ],
-
-
         epgMap: {},
         watchlist: JSON.parse(localStorage.getItem("catflix_watchlist") || "[]"),
         favorites: JSON.parse(localStorage.getItem("catflix_favorites") || "[]"),
@@ -151,7 +149,7 @@
         localStorage.setItem("catflix_lang", STATE.lang);
         localStorage.setItem("catflix_epg_url", STATE.epgUrl);
         localStorage.setItem("catflix_m3u_lists", JSON.stringify(STATE.m3uLists));
-        localStorage.setItem("catflix_channels_v2", JSON.stringify(STATE.channels));
+        localStorage.setItem("catflix_channels_v3", JSON.stringify(STATE.channels));
         localStorage.setItem("catflix_watchlist", JSON.stringify(STATE.watchlist));
         localStorage.setItem("catflix_favorites", JSON.stringify(STATE.favorites));
         localStorage.setItem("catflix_fav_ch", JSON.stringify(STATE.favChannels));
@@ -166,15 +164,14 @@
         el.style.display = "block";
     }
 
-        function imgUrl(path, size) {
+    function imgUrl(path, size) {
         size = size || "w500";
         if (!path) return "";
         if (path.indexOf("http") === 0) return path;
         return "https://" + "image.tmdb.org" + "/t/p/" + size + path;
     }
 
-
-            async function fetchSmart(url, isJson) {
+    async function fetchSmart(url, isJson) {
         const proxies = [
             url,
             "https://" + "://codetabs.com" + encodeURIComponent(url),
@@ -197,48 +194,16 @@
         return null;
     }
 
-
-
-            async function tmdb(path) {
+    async function tmdb(path) {
         if (STATE.cache[path]) return STATE.cache[path];
         const sep = path.indexOf("?") !== -1 ? "&" : "?";
-        const host = "https://" + "api." + "themoviedb.org/3";
-        const url = host + path + sep + "api_key=" + STATE.apiKey + "&language=" + STATE.lang;
+        const url = "https://" + "api.themoviedb.org" + "/3" + path + sep + "api_key=" + STATE.apiKey + "&language=" + STATE.lang;
         const data = await fetchSmart(url, true);
-        if (data && (data.results || data.genres || data.id)) {
-            showErr("");
-            STATE.cache[path] = data;
-            return data;
-        }
-        try {
-            const tvRes = await fetch("https://" + "api." + "://tvmaze.com");
-            if (tvRes.ok) {
-                const shows = await tvRes.json();
-                showErr("");
-                const mapped = {
-                    results: shows.slice(0, 20).map(function(s) {
-                        return {
-                            id: s.id,
-                            media_type: "tv",
-                            name: s.name,
-                            first_air_date: s.premiered || "2024",
-                            vote_average: (s.rating && s.rating.average) || 8.4,
-                            poster_path: (s.image && s.image.medium) || "",
-                            backdrop_path: (s.image && s.image.original) || "",
-                            overview: (s.summary || "").replace(/<[^>]+>/g, ""),
-                            genre_ids: []
-                        };
-                    })
-                };
-                STATE.cache[path] = mapped;
-                return mapped;
-            }
-        } catch (e) {}
-        showErr("TMDB API bağlantısı kurulamadı. Ayarlar bölümünden API anahtarınızı kontrol edin.");
-        return null;
+        if (!data) { showErr("TMDB API bağlantısı kurulamadı. Ayarlar bölümünden API anahtarınızı kontrol edin."); return null; }
+        showErr("");
+        STATE.cache[path] = data;
+        return data;
     }
-
-
 
     async function loadGenres() {
         const res = await Promise.all([tmdb("/genre/movie/list"), tmdb("/genre/tv/list")]);
@@ -591,7 +556,7 @@
                 '<div style="font-size:11px;color:#a3a3a3;">' + (ep.overview || "") + '</div></div>';
         }).join("");
     }
-        function playTrailerInline(ytKey, title) {
+    function playTrailerInline(ytKey, title) {
         const area = document.getElementById("inlineMediaArea");
         if (!area) return;
         if (ytKey) {
@@ -601,7 +566,6 @@
             window.open("https://" + "://youtube.com" + "/results?search_query=" + encodeURIComponent(title + " Türkçe fragman"), "_blank");
         }
     }
-
 
     function openTrailer(type, id, title) {
         openDetail(type, id).then(function() {
@@ -782,13 +746,11 @@
     function toggleFs(id) { const v = document.getElementById(id); if (v && v.requestFullscreen) v.requestFullscreen().catch(function() {}); }
     function closeModal() { document.getElementById("appModal").style.display = "none"; document.getElementById("modalBody").innerHTML = ""; }
 
-                const hlsScript = document.createElement("script");
+    const hlsScript = document.createElement("script");
     hlsScript.src = "https://" + "://cloudflare.com" + "/ajax/libs/hls.js/1.5.15/hls.min.js";
     hlsScript.onload = async function() { await loadGenres(); await goPage("home"); };
     hlsScript.onerror = async function() { await loadGenres(); await goPage("home"); };
     document.head.appendChild(hlsScript);
-
-    (async function() { await loadGenres(); await goPage("home"); })();
 </script>
 </body>
 </html>
