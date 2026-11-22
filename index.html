@@ -588,12 +588,16 @@
         });
     }
 
-    function playEpisodeDemo(tvId, sNum, eNum, epName) {
+        function playEpisodeDemo(tvId, sNum, eNum, epName) {
+        const showTitle = document.getElementById("modalTopTitle").innerText || "";
         const key = tvId + "_S" + sNum + "_E" + eNum;
-        STATE.progress[key] = { tvId: tvId, sNum: sNum, eNum: eNum, epName: epName, time: new Date().toLocaleString("tr-TR") };
+        STATE.progress[key] = { tvId: tvId, sNum: sNum, eNum: eNum, epName: showTitle + " - " + (epName || (eNum + ". Bölüm")), time: new Date().toLocaleString("tr-TR") };
         saveState();
-        alert("Sezon " + sNum + " • Bölüm " + eNum + " izleme geçmişine kaydedildi.");
+        const ytDomain = ["www", "youtube", "com"].join(".");
+        const q = showTitle + " " + sNum + ". Sezon " + eNum + ". Bölüm tek parça full izle";
+        window.open("https://" + ytDomain + "/results?search_query=" + encodeURIComponent(q) + "&sp=EgIYAg%253D%253D", "_blank");
     }
+
 
     function toggleSavedItem(listName, item) {
         const arr = STATE[listName];
