@@ -68,9 +68,32 @@
         <button type="button" class="btn-glass" onclick="closeModal()">Kapat</button>
     </div>
 </div>
-
 <script>
-    let DATA = { trending: [], movies: [], tv: [], anime: [] };
+    let DATA = {
+        trending: [
+            { id: 1, title: "Yıldızlararası", vote_average: 8.7, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu.", img: "./posters/1.jpg", bg: "./posters/1.jpg" },
+            { id: 2, title: "Dune: Çöl Gezegeni 2", vote_average: 8.5, overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir.", img: "./posters/2.jpg", bg: "./posters/2.jpg" },
+            { id: 3, title: "Başlangıç (Inception)", vote_average: 8.8, overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir.", img: "./posters/3.jpg", bg: "./posters/3.jpg" },
+            { id: 4, title: "Kara Şövalye", vote_average: 9.0, overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır.", img: "./posters/4.jpg", bg: "./posters/4.jpg" }
+        ],
+        movies: [
+            { id: 1, title: "Yıldızlararası", vote_average: 8.7, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu.", img: "./posters/1.jpg", bg: "./posters/1.jpg" },
+            { id: 2, title: "Dune: Çöl Gezegeni 2", vote_average: 8.5, overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir.", img: "./posters/2.jpg", bg: "./posters/2.jpg" },
+            { id: 3, title: "Başlangıç (Inception)", vote_average: 8.8, overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir.", img: "./posters/3.jpg", bg: "./posters/3.jpg" },
+            { id: 4, title: "Kara Şövalye", vote_average: 9.0, overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır.", img: "./posters/4.jpg", bg: "./posters/4.jpg" }
+        ],
+        tv: [
+            { id: 5, title: "Breaking Bad", vote_average: 9.5, overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer.", img: "./posters/5.jpg", bg: "./posters/5.jpg" },
+            { id: 6, title: "Game of Thrones", vote_average: 9.2, overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi.", img: "./posters/6.jpg", bg: "./posters/6.jpg" },
+            { id: 7, title: "Stranger Things", vote_average: 8.7, overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar.", img: "./posters/7.jpg", bg: "./posters/7.jpg" }
+        ],
+        anime: [
+            { id: 8, title: "Attack on Titan", vote_average: 9.1, overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir.", img: "./posters/8.jpg", bg: "./posters/8.jpg" },
+            { id: 9, title: "Demon Slayer", vote_average: 8.6, overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu kurtarmak için iblis avcısı olur.", img: "./posters/9.jpg", bg: "./posters/9.jpg" },
+            { id: 10, title: "Jujutsu Kaisen", vote_average: 8.6, overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak büyücülük dünyasına adım atar.", img: "./posters/10.jpg", bg: "./posters/10.jpg" }
+        ]
+    };
+
     let heroItem = null, itemsMap = {}, watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
 
     function setHero(item) {
@@ -100,7 +123,10 @@
     async function loadHome() {
         try {
             const res = await fetch("./catalog.json?v=" + Date.now());
-            if (res.ok) DATA = await res.json();
+            if (res.ok) {
+                const j = await res.json();
+                if (j && j.trending && j.trending.length > 0) DATA = j;
+            }
         } catch (e) {}
         setHero((DATA.trending || []).at(0));
         document.getElementById("catalogContainer").innerHTML =
