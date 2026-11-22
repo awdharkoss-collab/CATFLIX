@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CATFLIX • M3U & Medya Oynatıcı</title>
+    <title>CATFLIX</title>
     <style>
         :root { --bg: #08080c; --panel: #12121a; --red: #e50914; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
@@ -37,7 +37,7 @@
 <body>
 <nav>
     <div class="nav-left">
-        <div class="logo" onclick="renderItems(playlist)">CATFLIX M3U</div>
+        <div class="logo" onclick="renderItems(playlist)">CATFLIX</div>
         <span class="nav-link active" onclick="showTab('all', this)">Tüm Liste</span>
         <span class="nav-link" onclick="showTab('fav', this)">Favorilerim</span>
     </div>
@@ -74,15 +74,19 @@
         <video id="videoPlayer" controls playsinline></video>
     </div>
 </div>
-
 <script>
     const DEFAULT_ITEMS = [
-        { name: "TRT 1 (Açık Yayın)", group: "Ulusal TV", logo: "", url: "https://trt.com.tr" },
-        { name: "TRT Haber (Açık Yayın)", group: "Haber", logo: "", url: "https://trt.com.tr" },
-        { name: "TRT Belgesel (Açık Yayın)", group: "Belgesel", logo: "", url: "https://trt.com.tr" },
-        { name: "TRT Spor (Açık Yayın)", group: "Spor", logo: "", url: "https://trt.com.tr" },
-        { name: "Yaşayan Ölülerin Gecesi (1968)", group: "Sinema Klasikleri", logo: "", url: "https://archive.org" },
-        { name: "Öldüren Şüphe / Charade (1963)", group: "Sinema Klasikleri", logo: "", url: "https://archive.org" }
+        { name: "TRT 1 (Resmi Açık Yayın)", group: "Canlı TV", logo: "", url: "https://trt.com.tr" },
+        { name: "TRT Haber (Resmi Açık Yayın)", group: "Canlı TV", logo: "", url: "https://trt.com.tr" },
+        { name: "TRT Belgesel (Resmi Açık Yayın)", group: "Canlı TV", logo: "", url: "https://trt.com.tr" },
+        { name: "TRT Spor (Resmi Açık Yayın)", group: "Canlı TV", logo: "", url: "https://trt.com.tr" },
+        { name: "TRT Çocuk (Resmi Açık Yayın)", group: "Canlı TV", logo: "", url: "https://trt.com.tr" },
+        { name: "TRT Müzik (Resmi Açık Yayın)", group: "Canlı TV", logo: "", url: "https://trt.com.tr" },
+        { name: "Yaşayan Ölülerin Gecesi (1968)", group: "Sinema Filmleri", logo: "", url: "https://archive.org" },
+        { name: "Öldüren Şüphe / Charade (1963)", group: "Sinema Filmleri", logo: "", url: "https://archive.org" },
+        { name: "Lanetli Tepe (1959)", group: "Sinema Filmleri", logo: "", url: "https://archive.org" },
+        { name: "Nosferatu (1922)", group: "Sinema Filmleri", logo: "", url: "https://archive.org" },
+        { name: "General / Buster Keaton (1926)", group: "Sinema Filmleri", logo: "", url: "https://archive.org" }
     ];
 
     let playlist = JSON.parse(localStorage.getItem("catflix_m3u") || "null") || DEFAULT_ITEMS;
@@ -95,20 +99,19 @@
     }
 
     function parseM3uText(text) {
-        const lines = text.split(/\r?\n/);
-        const items = [];
+        const lines = text.split(/\r?\n/), items = [];
         let cur = null;
-        for (let line of lines) {
-            line = line.trim();
-            if (!line) continue;
-            if (line.startsWith("#EXTINF:")) {
-                const name = line.split(",").pop().trim() || "İsimsiz Yayın";
-                const gMatch = line.match(/group-title="([^"]*)"/i);
-                const lMatch = line.match(/tvg-logo="([^"]*)"/i);
-                cur = { name: name, group: gMatch ? gMatch : "Genel", logo: lMatch ? lMatch : "" };
-            } else if (/^(https?:|blob:)/i.test(line)) {
-                if (cur) { cur.url = line; items.push(cur); cur = null; }
-                else items.push({ name: line.split("/").pop().split("?"), group: "Doğrudan Link", logo: "", url: line });
+        for (let l of lines) {
+            l = l.trim();
+            if (!l) continue;
+            if (l.startsWith("#EXTINF:")) {
+                const name = l.split(",").pop().trim() || "Yayın";
+                const g = l.match(/group-title="([^"]*)"/i);
+                const lg = l.match(/tvg-logo="([^"]*)"/i);
+                cur = { name: name, group: g ? g : "Genel", logo: lg ? lg : "" };
+            } else if (/^(https?:|blob:)/i.test(l)) {
+                if (cur) { cur.url = l; items.push(cur); cur = null; }
+                else items.push({ name: l.split("/").pop().split("?"), group: "Eklenen Link", logo: "", url: l });
             }
         }
         return items;
@@ -118,56 +121,50 @@
         const url = document.getElementById("m3uUrlInput").value.trim();
         if (!url) return;
         if (/\.(mp4|mkv|webm|m3u8)(\?|$)/i.test(url)) {
-            const title = prompt("Bu film veya kanal için isim yaz:", url.split("/").pop().split("?"));
+            const title = prompt("Bu film veya kanal için isim yaz:", "Yeni Yayın");
             if (!title) return;
             playlist.unshift({ name: title, group: "Eklenenler", logo: "", url: url });
             saveData(); buildGroups(); renderItems(playlist);
             document.getElementById("m3uUrlInput").value = "";
             return;
         }
-        for (const u of [url, "https://codetabs.com" + encodeURIComponent(url), "https://allorigins.win" + encodeURIComponent(url)]) {
+        for (const u of [url, "https://codetabs.com" + encodeURIComponent(url)]) {
             try {
                 const res = await fetch(u);
                 if (res.ok) {
-                    const txt = await res.text();
-                    const parsed = parseM3uText(txt);
+                    const parsed = parseM3uText(await res.text());
                     if (parsed.length) {
                         playlist = parsed.concat(playlist);
                         saveData(); buildGroups(); renderItems(playlist);
                         document.getElementById("m3uUrlInput").value = "";
-                        alert("✅ " + parsed.length + " kanal/film başarıyla eklendi!");
+                        alert("✅ " + parsed.length + " içerik eklendi!");
                         return;
                     }
                 }
             } catch (e) {}
         }
-        alert("Liste okunamadı. .m3u dosyasını cihazına indirip 'Dosya Seç' butonuyla da yükleyebilirsin.");
+        alert("Link doğrudan okunamadı. .m3u dosyasını indirip 'Dosya Seç' ile yükleyebilirsin.");
     }
 
     function importFromFile(input) {
         const file = input.files;
         if (!file) return;
         if (file.type.startsWith("video/")) {
-            const blobUrl = URL.createObjectURL(file);
-            playlist.unshift({ name: file.name, group: "Yerel Videolar", logo: "", url: blobUrl });
+            playlist.unshift({ name: file.name, group: "Yerel Videolar", logo: "", url: URL.createObjectURL(file) });
             saveData(); buildGroups(); renderItems(playlist);
             return;
         }
-        const reader = new FileReader();
-        reader.onload = function(e) {
+        const r = new FileReader();
+        r.onload = e => {
             const parsed = parseM3uText(e.target.result);
-            if (parsed.length) {
-                playlist = parsed.concat(playlist);
-                saveData(); buildGroups(); renderItems(playlist);
-                alert("✅ Dosyadan " + parsed.length + " içerik yüklendi!");
-            }
+            if (parsed.length) { playlist = parsed.concat(playlist); saveData(); buildGroups(); renderItems(playlist); alert("✅ " + parsed.length + " içerik yüklendi!"); }
         };
-        reader.readAsText(file);
+        r.readAsText(file);
     }
 
     function exportM3u() {
         let out = "#EXTM3U\n";
-        playlist.forEach(it => { out += `#EXTINF:-1 group-title="${it.group}" tvg-logo="${it.logo || ""}",${it.name}\n${it.url}\n`; });
+        playlist.forEach(it => { out += `#EXTINF:-1 group-title="${it.group}",${it.name}\n${it.url}\n`; });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(new Blob([out], { type: "audio/x-mpegurl" }));
         a.download = "catflix_listem.m3u";
@@ -175,11 +172,8 @@
     }
 
     function clearPlaylist() {
-        if (confirm("Tüm liste sıfırlansın mı?")) {
-            playlist = DEFAULT_ITEMS; saveData(); buildGroups(); renderItems(playlist);
-        }
+        if (confirm("Liste varsayılana sıfırlansın mı?")) { playlist = DEFAULT_ITEMS; saveData(); buildGroups(); renderItems(playlist); }
     }
-
     function buildGroups() {
         const groups = ["Tümü", ...new Set(playlist.map(x => x.group || "Genel"))];
         document.getElementById("groupBar").innerHTML = groups.map(g =>
@@ -208,7 +202,8 @@
         if (!list.length) { grid.innerHTML = '<div style="padding:20px;color:#94a3b8;">Liste boş.</div>'; return; }
         grid.innerHTML = list.map((it, idx) => {
             const isFav = favs.some(f => f.url === it.url);
-            const thumb = it.logo ? `<img src="${it.logo}" onerror="this.remove()">` : `<div style="font-size:32px;">🎬</div>`;
+            const icon = (it.group === "Canlı TV" || it.group === "Haber" || it.group === "Spor") ? "📺" : "🎬";
+            const thumb = it.logo ? `<img src="${it.logo}" onerror="this.remove()">` : `<div style="font-size:34px;">${icon}</div>`;
             return `<div class="card">
                 <div class="card-thumb" onclick="playStream('${it.name.replace(/'/g, "\\'")}','${it.url}')">${thumb}</div>
                 <div class="card-body">
@@ -232,31 +227,34 @@
     }
 
     function playStream(name, url) {
-stopPlayer();
-document.getElementById("pTitle").innerText = name;
-const dlBtn = document.getElementById("pDownloadBtn");
-if (/.mp4(?|$)/i.test(url) || url.startsWith("blob:")) { dlBtn.style.display = "inline-block"; dlBtn.href = url; }
-else { dlBtn.style.display = "none"; }
-const video = document.getElementById("videoPlayer");
-if (window.Hls && Hls.isSupported() && /.m3u8/i.test(url)) {
-hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
-hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-} else {
-video.src = url; video.play().catch(() => {});
-}
-document.getElementById("playerModal").style.display = "flex";
-}
-function stopPlayer() {
-const video = document.getElementById("videoPlayer");
-video.pause(); video.src = "";
-if (hls) { hls.destroy(); hls = null; }
-}
-function closeModal() { stopPlayer(); document.getElementById("playerModal").style.display = "none"; }
-const s = document.createElement("script");
-s.src = "unpkg.com";
-document.head.appendChild(s);
-buildGroups();
-renderItems(playlist);
+        stopPlayer();
+        document.getElementById("pTitle").innerText = name;
+        const dlBtn = document.getElementById("pDownloadBtn");
+        if (/\.mp4(\?|$)/i.test(url) || url.startsWith("blob:")) { dlBtn.style.display = "inline-block"; dlBtn.href = url; }
+        else { dlBtn.style.display = "none"; }
+
+        const video = document.getElementById("videoPlayer");
+        if (window.Hls && Hls.isSupported() && /\.m3u8/i.test(url)) {
+            hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+        } else {
+            video.src = url; video.play().catch(() => {});
+        }
+        document.getElementById("playerModal").style.display = "flex";
+    }
+
+    function stopPlayer() {
+        const video = document.getElementById("videoPlayer");
+        video.pause(); video.src = "";
+        if (hls) { hls.destroy(); hls = null; }
+    }
+
+    function closeModal() { stopPlayer(); document.getElementById("playerModal").style.display = "none"; }
+
+    const s = document.createElement("script");
+    s.src = "https://unpkg.com";
+    document.head.appendChild(s);
+
     buildGroups();
     renderItems(playlist);
 </script>
