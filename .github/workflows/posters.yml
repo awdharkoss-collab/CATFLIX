@@ -12,66 +12,25 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           mkdir -p posters
-          curl -sSL -A "Mozilla/5.0" "https://apple.com" -o m1.json
-          curl -sSL -A "Mozilla/5.0" "https://apple.com" -o m2.json
-          curl -sSL -A "Mozilla/5.0" "https://apple.com" -o tv.json
-          curl -sSL -A "Mozilla/5.0" "https://jikan.moe" -o anime.json
-          cat << 'EOF' > parse.py
-          import json, subprocess
-
-          def load_safe(fn):
-              try: return json.load(open(fn, encoding="utf-8"))
-              except: return {}
-
-          def grab(url, fn):
-              if not url: return ""
-              hq = url.replace("100x100bb", "600x600bb")
-              subprocess.run(["curl", "-sSL", "-A", "Mozilla/5.0", hq, "-o", "posters/" + fn])
-              return "/" + fn
-
-          movies = []
-          for idx, item in enumerate((load_safe("m1.json").get("results") or []) + (load_safe("m2.json").get("results") or [])):
-              p = grab(item.get("artworkUrl100", ""), f"m_{idx}.jpg")
-              movies.append({
-                  "id": item.get("trackId", idx),
-                  "title": item.get("trackName", ""),
-                  "vote_average": 8.6,
-                  "overview": item.get("longDescription") or item.get("shortDescription") or "Popüler sinema filmi.",
-                  "poster_path": p,
-                  "backdrop_path": p
-              })
-
-          tvs = []
-          for idx, item in enumerate(load_safe("tv.json").get("results") or []):
-              p = grab(item.get("artworkUrl100", ""), f"t_{idx}.jpg")
-              tvs.append({
-                  "id": item.get("collectionId", idx + 5000),
-                  "title": item.get("collectionName") or item.get("artistName", ""),
-                  "vote_average": 8.7,
-                  "overview": item.get("longDescription") or "Popüler yabancı dizi.",
-                  "poster_path": p,
-                  "backdrop_path": p
-              })
-
-          animes = []
-          for idx, a in enumerate(load_safe("anime.json").get("data") or []):
-              img = ((a.get("images") or {}).get("jpg") or {}).get("large_image_url") or ""
-              p = grab(img, f"a_{idx}.jpg")
-              animes.append({
-                  "id": a.get("mal_id", idx + 9000),
-                  "title": a.get("title_english") or a.get("title", ""),
-                  "vote_average": a.get("score") or 8.8,
-                  "overview": a.get("synopsis") or "Popüler anime yapımı.",
-                  "poster_path": p,
-                  "backdrop_path": p
-              })
-
-          data = {"trending": movies[:12], "movies": movies[12:], "tv": tvs[:15], "anime": animes}
-          open("catalog.json", "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False))
-          EOF
-          python3 parse.py
+          python3 -c '
+          import urllib.request
+          imgs = {
+              "1.jpg": "https://unsplash.com",
+              "2.jpg": "https://unsplash.com",
+              "3.jpg": "https://unsplash.com",
+              "4.jpg": "https://unsplash.com",
+              "5.jpg": "https://unsplash.com",
+              "6.jpg": "https://unsplash.com",
+              "7.jpg": "https://unsplash.com",
+              "8.jpg": "https://unsplash.com",
+              "9.jpg": "https://unsplash.com",
+              "10.jpg": "https://unsplash.com"
+          }
+          for name, url in imgs.items():
+              urllib.request.urlretrieve(url, "posters/" + name)
+          '
           git config user.name "Bot"
           git config user.email "bot@catflix.local"
-          git add posters catalog.json
-          git commit -m "afisler" || exit 0
+          git add posters
+          git commit -m "yerel_afisler" || exit 0
           git push
