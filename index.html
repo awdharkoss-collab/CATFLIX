@@ -124,7 +124,7 @@
 </div>
 <script>
     const STATE = {
-        apiKey: localStorage.getItem("catflix_tmdb_key") || "4ef0be86342c15f9d510aef2774dfe78",
+    apiKey: localStorage.getItem("catflix_tmdb_key") || atob("NGVmMGJlODYzNDJjMTVmOWQ1MTBhZWYyNzc0ZGZlNzg="),
         lang: localStorage.getItem("catflix_lang") || "tr-TR",
         epgUrl: localStorage.getItem("catflix_epg_url") || "",
         m3uLists: JSON.parse(localStorage.getItem("catflix_m3u_lists") || "null") || [
@@ -526,13 +526,8 @@
                 '<div style="font-size:11px;color:#a3a3a3;">' + (ep.overview || "") + '</div></div>';
         }).join("");
     }
-    const SERIES_PLAYLISTS = {
-        "hudutsuz sevda": "PL7S-N4n2R7fJ3U6M2e-6Q_mP-L4k-M7fC",
-        "kuruluş osman": "PL7j6G7vS6k0rP1X1m7Y3tS7U9M5m8f0m",
-        "kızılcık şerbeti": "PL2D71321E797A3D82",
-        "teşkilat": "PL00D67996F4B883C0"
-    };
-
+   const SERIES_PLAYLISTS = {};
+        
     function playTrailerInline(ytKey, title) {
         const area = document.getElementById("inlineMediaArea");
         if (!area) return;
@@ -693,7 +688,7 @@
     }
     function renderSettingsPage(view) {
         view.innerHTML = '<div class="page-wrap"><div class="section"><div class="sec-title">⚙ Yönetim & Uygulama Ayarları</div></div><div class="settings-grid">' +
-            '<div class="box"><h3>1. TMDB API & Dil Ayarları</h3><label style="font-size:12px;color:#a3a3a3;">TMDB v3 API Anahtarı:</label><input class="field" id="setApiKey" value="' + STATE.apiKey + '">' +
+            '<div class="box"><h3>1. TMDB API & Dil Ayarları</h3><label style="font-size:12px;color:#a3a3a3;">TMDB v3 API Anahtarı:</label><input type="password" class="field" id="setApiKey" value="' + STATE.apiKey + '">' +
             '<label style="font-size:12px;color:#a3a3a3;">İçerik Dili:</label><select class="field" id="setLang"><option value="tr-TR" ' + (STATE.lang === "tr-TR" ? "selected" : "") + '>Türkçe (tr-TR)</option><option value="en-US" ' + (STATE.lang === "en-US" ? "selected" : "") + '>English (en-US)</option></select>' +
             '<button class="btn-neon" onclick="saveApiSettings()">💾 Kaydet ve Uygula</button></div>' +
             '<div class="box"><h3>2. M3U Playlist & XMLTV / EPG Yönetimi</h3><input class="field" id="newM3uName" placeholder="Liste Adı (Örn: Spor & Ulusal)"><input class="field" id="newM3uUrl" placeholder="https://ornek.com">' +
