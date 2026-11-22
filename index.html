@@ -91,11 +91,13 @@
     DATA = FALLBACK;
     let heroItem = null, itemsMap = {}, watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
 
-    function resolveImg(path) {
+       function resolveImg(path, id) {
+        if (id) return "./posters/" + id + ".jpg";
         if (!path) return "";
         if (path.indexOf("http") === 0) return path;
         return "./posters/" + path.replace(/^\//, "");
     }
+
 
     function setHero(item) {
         if (!item) return;
