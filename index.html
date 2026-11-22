@@ -198,18 +198,19 @@
     }
 
 
-        async function tmdb(path) {
+            async function tmdb(path) {
         if (STATE.cache[path]) return STATE.cache[path];
         const sep = path.indexOf("?") !== -1 ? "&" : "?";
-        const url = "https://themoviedb.org" + path + sep + "api_key=" + STATE.apiKey + "&language=" + STATE.lang;
+        const host = "https://" + "api." + "themoviedb.org/3";
+        const url = host + path + sep + "api_key=" + STATE.apiKey + "&language=" + STATE.lang;
         const data = await fetchSmart(url, true);
-        if (data && data.results) {
+        if (data && (data.results || data.genres || data.id)) {
             showErr("");
             STATE.cache[path] = data;
             return data;
         }
         try {
-            const tvRes = await fetch("https://tvmaze.com");
+            const tvRes = await fetch("https://" + "api." + "://tvmaze.com");
             if (tvRes.ok) {
                 const shows = await tvRes.json();
                 showErr("");
@@ -235,6 +236,7 @@
         showErr("TMDB API bağlantısı kurulamadı. Ayarlar bölümünden API anahtarınızı kontrol edin.");
         return null;
     }
+
 
 
     async function loadGenres() {
@@ -777,8 +779,8 @@
     function toggleFs(id) { const v = document.getElementById(id); if (v && v.requestFullscreen) v.requestFullscreen().catch(function() {}); }
     function closeModal() { document.getElementById("appModal").style.display = "none"; document.getElementById("modalBody").innerHTML = ""; }
 
-        const hlsScript = document.createElement("script");
-    hlsScript.src = "https://unpkg.com";
+            const hlsScript = document.createElement("script");
+    hlsScript.src = "https://" + "://unpkg.com";
     hlsScript.onload = async function() {
         await loadGenres();
         await goPage("home");
@@ -788,6 +790,7 @@
         await goPage("home");
     };
     document.head.appendChild(hlsScript);
+
 
 
     (async function() { await loadGenres(); await goPage("home"); })();
