@@ -115,7 +115,7 @@
             const score = it.vote_average ? Number(it.vote_average).toFixed(1) : "Yeni";
             html += '<div class="poster-card" onclick="openDetail(\'' + key + '\')">' +
                 '<span class="rating-pill">★ ' + score + '</span>' +
-                '<img src="' + IMG_POSTER + it.poster_path + '" loading="lazy">' +
+                '<img src="' + IMG_POSTER + it.poster_path + '">' +
                 '<div class="poster-name">' + name + '</div></div>';
         }
         return '<div class="section"><div class="sec-title">' + title + '</div><div class="row">' + html + '</div></div>';
