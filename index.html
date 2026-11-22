@@ -435,7 +435,7 @@
         }).join("");
     }
 
-    function selectChannel(idx) {
+        function selectChannel(idx) {
         const ch = STATE.channels.at(idx);
         if (!ch) return;
         STATE.activeChannel = ch;
@@ -448,10 +448,14 @@
         const video = document.getElementById("liveVideo");
         if (STATE.hls) { STATE.hls.destroy(); STATE.hls = null; }
 
+        const streamUrl = ch.url.indexOf("http://") === 0
+            ? "https://" + "://codetabs.com" + encodeURIComponent(ch.url)
+            : ch.url;
+
         if (window.Hls && Hls.isSupported() && /\.m3u8/i.test(ch.url)) {
             const hls = new Hls();
             STATE.hls = hls;
-            hls.loadSource(ch.url);
+            hls.loadSource(streamUrl);
             hls.attachMedia(video);
             hls.on(Hls.Events.MANIFEST_PARSED, function(_, data) {
                 document.getElementById("liveQualitySel").innerHTML = '<option value="-1">Kalite: Otomatik</option>' + (data.levels || []).map(function(l, i) { return '<option value="' + i + '">' + l.height + 'p</option>'; }).join("");
@@ -459,15 +463,16 @@
                 video.play().catch(function() {});
             });
             hls.on(Hls.Events.ERROR, function(_, d) {
-                if (d.fatal) { errBox.innerText = "⚠️ Yayın akışı açılamadı veya desteklenmiyor."; errBox.style.display = "block"; }
+                if (d.fatal) { errBox.innerText = "⚠️ Yayın akışı açılamadı veya kaynak sunucu erişimi kapattı."; errBox.style.display = "block"; }
             });
         } else {
-            video.src = ch.url;
+            video.src = streamUrl;
             video.onerror = function() { errBox.innerText = "⚠️ Desteklenmeyen yayın formatı veya erişim engeli."; errBox.style.display = "block"; };
             video.play().catch(function() {});
         }
         drawTvChannels(STATE.channels);
     }
+
 
     function toggleFavChannel() {
         if (!STATE.activeChannel) return;
