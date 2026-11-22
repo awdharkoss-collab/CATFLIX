@@ -1,0 +1,34 @@
+name: CATFLIX Gercek Afisler
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  posters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p posters
+          python3 -c '
+          import urllib.request, json
+          KEY = "4ef0be86342c15f9d510aef2774dfe78"
+          def get(ep):
+              sep = "&" if "?" in ep else "?"
+              return json.loads(urllib.request.urlopen(f"https://themoviedb.org{ep}{sep}api_key={KEY}&language=tr-TR").read().decode()).get("results", [])[:12]
+          data = {"trending": get("/trending/all/week"), "movies": get("/movie/popular"), "tv": get("/tv/popular"), "anime": get("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc")}
+          for k, lst in data.items():
+              for it in lst:
+                  for f in ["poster_path", "backdrop_path"]:
+                      p = it.get(f)
+                      if p:
+                          fn = p.lstrip("/")
+                          try: urllib.request.urlretrieve(f"https://tmdb.org{fn}", f"posters/{fn}")
+                          except: pass
+          open("catalog.json", "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False))
+          '
+          git config user.name "Bot" && git config user.email "bot@catflix.local"
+          git add posters catalog.json && git commit -m "afisler" || exit 0
+          git push
