@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CATFLIX • Sinema, Dizi, Anime & Canlı TV</title>
+    <title>CATFLIX • Canlı TV, Sinema & Dizi</title>
     <script src="https://jsdelivr.net"></script>
     <style>
         :root { --bg: #08080c; --panel: #12121a; --red: #e50914; }
@@ -11,17 +11,15 @@
         body { background: var(--bg); color: #fff; padding-bottom: 50px; }
         nav { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(8,8,12,0.96); border-bottom: 1px solid rgba(255,255,255,0.08); gap: 10px; }
         .nav-left { display: flex; align-items: center; gap: 15px; overflow-x: auto; scrollbar-width: none; }
-        .nav-left::-webkit-scrollbar { display: none; }
         .logo { font-size: 24px; font-weight: 900; color: var(--red); cursor: pointer; letter-spacing: 1.5px; }
-        .nav-link { color: #cbd5e1; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; padding-bottom: 3px; }
+        .nav-link { color: #cbd5e1; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
         .nav-link.active { color: #fff; border-bottom: 2px solid var(--red); }
         .live-badge { background: var(--red); color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 800; }
         input { background: #1c1c26; border: 1px solid #333; color: #fff; padding: 7px 13px; border-radius: 18px; width: 145px; outline: none; font-size: 13px; }
-        .hero { position: relative; min-height: 390px; padding: 110px 24px 36px; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; }
-        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.95) 28%, rgba(8,8,12,0.25) 85%), linear-gradient(to top, var(--bg) 8%, transparent 65%); }
+        .hero { position: relative; min-height: 360px; padding: 110px 24px 36px; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; background-image: linear-gradient(135deg, #1a080c, #08080c); }
+        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.95) 28%, rgba(8,8,12,0.2) 85%), linear-gradient(to top, var(--bg) 8%, transparent 65%); }
         .hero-content { position: relative; z-index: 10; max-width: 580px; }
-        .hero-meta { color: #4ade80; font-size: 12px; font-weight: 800; margin-bottom: 6px; }
-        .hero-title { font-size: 34px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
+        .hero-title { font-size: 32px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; }
         .hero-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; line-height: 1.5; }
         .btn-red { background: var(--red); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; margin-right: 8px; }
         .btn-glass { background: rgba(255,255,255,0.18); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
@@ -32,17 +30,15 @@
         .poster-card:hover { transform: scale(1.04); border-color: var(--red); }
         .poster-card img { width: 100%; height: 220px; object-fit: cover; display: block; background: #1e293b; }
         .rating-pill { position: absolute; top: 8px; left: 8px; z-index: 2; background: rgba(0,0,0,0.85); color: #4ade80; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 6px; }
-        .year-pill { position: absolute; top: 8px; right: 8px; z-index: 2; background: rgba(229,9,20,0.9); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 5px; }
         .poster-info { padding: 8px; }
         .poster-name { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 12px; }
         .tv-card { background: var(--panel); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 14px 10px; text-align: center; cursor: pointer; transition: 0.2s; }
         .tv-card:hover { border-color: var(--red); transform: translateY(-2px); }
-        .tv-card img { width: 54px; height: 54px; object-fit: contain; margin-bottom: 8px; border-radius: 8px; background: #1e293b; padding: 4px; }
-        .tv-name { font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 60; align-items: center; justify-content: center; padding: 16px; }
-        .modal-box { background: var(--panel); border: 1px solid var(--red); border-radius: 14px; max-width: 720px; width: 100%; overflow: hidden; }
-        video { width: 100%; max-height: 65vh; background: #000; display: block; }
+        .tv-name { font-size: 13px; font-weight: 800; margin-top: 6px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 60; align-items: center; justify-content: center; padding: 16px; }
+        .modal-box { background: var(--panel); border: 1px solid var(--red); border-radius: 14px; max-width: 780px; width: 100%; overflow: hidden; }
+        video { width: 100%; max-height: 68vh; background: #000; display: block; }
     </style>
 </head>
 <body>
@@ -50,22 +46,18 @@
     <div class="nav-left">
         <div class="logo" onclick="loadHome()">CATFLIX</div>
         <span class="nav-link active" onclick="switchCat(this, 'home')">Ana Sayfa</span>
-        <span class="nav-link" onclick="switchCat(this, 'movie')">Filmler</span>
-        <span class="nav-link" onclick="switchCat(this, 'tv')">Diziler</span>
-        <span class="nav-link" onclick="switchCat(this, 'anime')">Anime</span>
+        <span class="nav-link" onclick="switchCat(this, 'movies')">Sinema Filmleri</span>
         <span class="nav-link" onclick="switchCat(this, 'livetv')"><span class="live-badge">● CANLI TV</span></span>
         <span class="nav-link" onclick="switchCat(this, 'watchlist')">Listem</span>
     </div>
-    <input type="text" id="searchInput" placeholder="Film, dizi, kanal ara..." oninput="searchCatalog(this.value)">
+    <input type="text" id="searchInput" placeholder="Film veya kanal ara..." oninput="searchCatalog(this.value)">
 </nav>
 
 <div class="hero" id="heroBanner">
     <div class="hero-content">
-        <div class="hero-meta" id="heroMeta"></div>
-        <h1 class="hero-title" id="heroTitle">CATFLIX</h1>
-        <p class="hero-desc" id="heroDesc"></p>
-        <button type="button" class="btn-red" onclick="watchHeroTrailer()">▶ Fragman / İzle</button>
-        <button type="button" class="btn-glass" onclick="openHeroDetails()">ⓘ Detay & Liste</button>
+        <h1 class="hero-title" id="heroTitle">CATFLIX SINEMA & TV</h1>
+        <p class="hero-desc" id="heroDesc">Ücretsiz açık kaynaklı sinema filmleri, canlı Türk TV kanalları ve TMDB sinema kataloğu.</p>
+        <button type="button" class="btn-red" onclick="playHero()">▶ Hemen İzle</button>
     </div>
 </div>
 
@@ -73,158 +65,176 @@
 
 <div class="modal" id="detailModal" onclick="if(event.target===this) closeModal()">
     <div class="modal-box">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.1);">
-            <div>
-                <h2 id="mTitle" style="font-size:18px;"></h2>
-                <div id="mMeta" style="font-size:12px;color:#4ade80;"></div>
-            </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.1);">
+            <h2 id="mTitle" style="font-size:17px;"></h2>
             <button type="button" class="btn-red" style="padding:6px 14px;margin:0;" onclick="closeModal()">✕ Kapat</button>
         </div>
-        <div id="tvPlayerWrap" style="display:none;"><video id="tvVideo" controls playsinline></video></div>
-        <div style="padding:18px;">
-            <p id="mOverview" style="font-size:13px;color:#cbd5e1;line-height:1.6;max-height:160px;overflow-y:auto;margin-bottom:14px;"></p>
-            <div id="mActions">
-                <button type="button" class="btn-red" id="mTrailerBtn">▶ YouTube Resmi Fragman</button>
-                <button type="button" class="btn-glass" id="mFavBtn">+ İzleme Listeme Ekle</button>
-            </div>
+        <video id="videoPlayer" controls playsinline></video>
+        <div style="padding:14px 16px;">
+            <p id="mOverview" style="font-size:13px;color:#cbd5e1;margin-bottom:10px;"></p>
+            <button type="button" class="btn-glass" id="mFavBtn">+ İzleme Listeme Ekle</button>
         </div>
     </div>
 </div>
+
 <script>
-    let DATA = { trending: [], movies: [], top_movies: [], tv: [], top_tv: [], anime: [], action: [], scifi: [], channels: [] };
-    let heroItem = null, itemsMap = {}, hlsInstance = null;
+    const TMDB_KEY = "4ef0be86342c15f9d510aef2774dfe78";
+    const FREE_MOVIES = [
+        { id: "m1", title: "Yaşayan Ölülerin Gecesi", vote: "7.8", img: "./posters/1.jpg", video: "https://archive.org", overview: "Korku sinemasının kült klasiği. Tam uzunluk ücretsiz izle." },
+        { id: "m2", title: "Öldüren Şüphe (Charade)", vote: "7.9", img: "./posters/2.jpg", video: "https://archive.org", overview: "Audrey Hepburn ve Cary Grant başrollü casusluk gerilimi." },
+        { id: "m3", title: "Lanetli Tepe", vote: "6.9", img: "./posters/3.jpg", video: "https://archive.org", overview: "Perili bir malikanede hayatta kalma mücadelesi." },
+        { id: "m4", title: "Nosferatu (1922)", vote: "7.9", img: "./posters/4.jpg", video: "https://archive.org", overview: "Sinema tarihinin en ünlü vampir efsanesi." },
+        { id: "m5", title: "General (Buster Keaton)", vote: "8.1", img: "./posters/5.jpg", video: "https://archive.org", overview: "Kaçırılan trenin peşinde nefes kesici bir aksiyon komedisi." }
+    ];
+
+    let LIVE_CHANNELS = [
+        { name: "TRT 1 (Resmi Açık Yayın)", url: "https://trt.com.tr" },
+        { name: "TRT Haber (Resmi Açık Yayın)", url: "https://trt.com.tr" },
+        { name: "TRT Belgesel (Resmi Açık Yayın)", url: "https://trt.com.tr" },
+        { name: "TRT Çocuk (Resmi Açık Yayın)", url: "https://trt.com.tr" },
+        { name: "TRT Spor (Resmi Açık Yayın)", url: "https://trt.com.tr" },
+        { name: "TRT Müzik (Resmi Açık Yayın)", url: "https://trt.com.tr" }
+    ];
+
+    let tmdbMovies = [], hls = null, curHero = FREE_MOVIES;
     let watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
-
-    function setHero(item) {
-        if (!item) return;
-        heroItem = item;
-        document.getElementById("heroBanner").style.backgroundImage = "url('" + (item.backdrop || item.poster) + "')";
-        document.getElementById("heroMeta").innerText = "★ " + item.vote + (item.year ? "  •  " + item.year : "") + "  •  ÖNE ÇIKAN YAPIM";
-        document.getElementById("heroTitle").innerText = item.title;
-        document.getElementById("heroDesc").innerText = item.overview;
+    async function fetchLiveChannels() {
+        try {
+            const res = await fetch("https://github.io");
+            if (res.ok) {
+                const lines = (await res.text()).split("\n");
+                let name = "";
+                const parsed = [];
+                for (let l of lines) {
+                    if (l.startsWith("#EXTINF:")) name = l.split(",").pop().trim();
+                    else if (l.startsWith("http") && name) { parsed.push({ name: name, url: l.trim() }); name = ""; }
+                }
+                if (parsed.length > 5) LIVE_CHANNELS = parsed;
+            }
+        } catch (e) {}
     }
 
-    function buildRow(title, items) {
-        if (!items || !items.length) return "";
-        let html = "";
-        for (let i = 0; i < items.length; i++) {
-            const it = items[i];
-            itemsMap[it.id] = it;
-            html += '<div class="poster-card" onclick="openDetail(' + it.id + ')">' +
-                '<span class="rating-pill">★ ' + it.vote + '</span>' +
-                (it.year ? '<span class="year-pill">' + it.year + '</span>' : '') +
-                '<img src="' + it.poster + '" alt="' + it.title.replace(/"/g, "") + '" loading="lazy">' +
-                '<div class="poster-info"><div class="poster-name">' + it.title + '</div></div></div>';
-        }
-        return '<div class="section"><div class="sec-title">' + title + '</div><div class="row">' + html + '</div></div>';
+    async function fetchTmdbDirect() {
+        try {
+            const res = await fetch("https://themoviedb.org" + TMDB_KEY + "&language=tr-TR");
+            if (res.ok) {
+                const data = await res.json();
+                tmdbMovies = (data.results || []).map(x => ({
+                    id: "t_" + x.id,
+                    title: x.title || x.name,
+                    vote: (x.vote_average || 8.0).toFixed(1),
+                    img: x.poster_path ? "https://tmdb.org" + x.poster_path : "./posters/6.jpg",
+                    overview: x.overview || "TMDB Türkçe içerik bilgisi."
+                }));
+            }
+        } catch (e) {}
     }
 
-    function buildTvGrid(channels) {
-        if (!channels || !channels.length) return '<div class="section">Canlı TV kanalları yükleniyor...</div>';
-        let html = '<div class="section"><div class="sec-title">📡 Canlı Türk TV Kanalları (' + channels.length + ' Kanal)</div><div class="tv-grid">';
-        for (let i = 0; i < channels.length; i++) {
-            const ch = channels[i];
-            const logo = ch.logo || "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='60' height='60'><rect width='60' height='60' fill='%231e293b'/><text x='30' y='36' fill='%23e50914' font-size='18' font-weight='bold' text-anchor='middle'>TV</text></svg>";
-            html += '<div class="tv-card" onclick="playLiveTv(' + i + ')">' +
-                '<img src="' + logo + '" onerror="this.style.opacity=0.3">' +
-                '<div class="tv-name">' + ch.name + '</div></div>';
-        }
+    function renderRow(title, list) {
+        if (!list.length) return "";
+        let html = '<div class="section"><div class="sec-title">' + title + '</div><div class="row">';
+        list.forEach(m => {
+            html += `<div class="poster-card" onclick='openItem(${JSON.stringify(m).replace(/'/g, "&#39;")})'>
+                <span class="rating-pill">★ ${m.vote}</span>
+                <img src="${m.img}" onerror="this.src='./posters/1.jpg'">
+                <div class="poster-info"><div class="poster-name">${m.title}</div></div></div>`;
+        });
+        return html + '</div></div>';
+    }
+
+    function renderTv() {
+        let html = `<div class="section"><div class="sec-title">📡 Canlı Türk TV Kanalları (${LIVE_CHANNELS.length} Kanal)</div><div class="tv-grid">`;
+        LIVE_CHANNELS.forEach((ch, i) => {
+            html += `<div class="tv-card" onclick="playTv(${i})"><div style="font-size:26px;">📺</div><div class="tv-name">${ch.name}</div></div>`;
+        });
         return html + '</div></div>';
     }
 
     async function loadHome() {
-        try {
-            const res = await fetch("./catalog.json?v=" + Date.now());
-            if (res.ok) DATA = await res.json();
-        } catch (e) {}
-        setHero((DATA.trending || []).at(0));
-        document.getElementById("catalogContainer").innerHTML =
-            buildRow("🔥 Haftanın Trendleri", DATA.trending) +
-            buildRow("🎬 Popüler Yeni Filmler", DATA.movies) +
-            buildRow("📺 Popüler Yeni Diziler", DATA.tv) +
-            buildRow("⛩️ Popüler Animeler", DATA.anime) +
-            buildRow("💥 Aksiyon & Macera", DATA.action) +
-            buildRow("🚀 Bilim Kurgu", DATA.scifi) +
-            buildRow("🏆 Tüm Zamanların En İyi Filmleri", DATA.top_movies) +
-            buildRow("⭐ En Yüksek Puanlı Diziler", DATA.top_tv);
+        await Promise.all([fetchLiveChannels(), fetchTmdbDirect()]);
+        curHero = FREE_MOVIES;
+        document.getElementById("heroBanner").style.backgroundImage = "url('" + curHero.img + "')";
+        document.getElementById("heroTitle").innerText = curHero.title;
+        document.getElementById("heroDesc").innerText = curHero.overview;
+
+        let html = renderRow("🎬 Tam Uzunluk Ücretsiz Sinema Filmleri (Tıkla İzle)", FREE_MOVIES);
+        if (tmdbMovies.length) html += renderRow("🔥 TMDB Haftanın Trendleri (Canlı API)", tmdbMovies);
+        html += renderTv();
+        document.getElementById("catalogContainer").innerHTML = html;
     }
 
     function switchCat(el, cat) {
         document.querySelectorAll(".nav-link").forEach(n => n.classList.remove("active"));
         el.classList.add("active");
         const c = document.getElementById("catalogContainer");
-        if (cat === "home") { loadHome(); return; }
-        if (cat === "livetv") { c.innerHTML = buildTvGrid(DATA.channels); return; }
-        if (cat === "watchlist") {
-            c.innerHTML = watchlist.length ? buildRow("❤️ İzleme Listem", watchlist) : '<div class="section">İzleme listeniz henüz boş.</div>';
-            return;
-        }
-        if (cat === "movie") { setHero((DATA.movies || []).at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", DATA.movies) + buildRow("💥 Aksiyon", DATA.action) + buildRow("🚀 Bilim Kurgu", DATA.scifi) + buildRow("🏆 En İyi Filmler", DATA.top_movies); }
-        if (cat === "tv") { setHero((DATA.tv || []).at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", DATA.tv) + buildRow("⭐ En Yüksek Puanlı Diziler", DATA.top_tv); }
-        if (cat === "anime") { setHero((DATA.anime || []).at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", DATA.anime); }
+        if (cat === "home") loadHome();
+        else if (cat === "movies") c.innerHTML = renderRow("🎬 Tam Uzunluk Ücretsiz Filmler", FREE_MOVIES) + renderRow("🔥 TMDB Trendler", tmdbMovies);
+        else if (cat === "livetv") c.innerHTML = renderTv();
+        else if (cat === "watchlist") c.innerHTML = watchlist.length ? renderRow("❤️ İzleme Listem", watchlist) : '<div class="section">Listeniz henüz boş.</div>';
     }
 
     function searchCatalog(q) {
         const t = q.trim().toLowerCase();
         if (!t) { loadHome(); return; }
-        const foundItems = Object.values(itemsMap).filter(i => i.title.toLowerCase().indexOf(t) !== -1);
-        const foundCh = (DATA.channels || []).filter(ch => ch.name.toLowerCase().indexOf(t) !== -1);
-        let out = buildRow('🔍 "' + q + '" Film & Dizi Sonuçları', foundItems);
-        if (foundCh.length) out += buildTvGrid(foundCh);
+        const mFound = [...FREE_MOVIES, ...tmdbMovies].filter(m => m.title.toLowerCase().includes(t));
+        const cFound = LIVE_CHANNELS.filter(c => c.name.toLowerCase().includes(t));
+        let out = renderRow("🔍 Film & Dizi Sonuçları", mFound);
+        if (cFound.length) {
+            out += `<div class="section"><div class="sec-title">📡 Bulunan Kanallar</div><div class="tv-grid">` +
+                cFound.map(ch => `<div class="tv-card" onclick="playStream('${ch.name}','${ch.url}')"><div>📺</div><div class="tv-name">${ch.name}</div></div>`).join("") + `</div></div>`;
+        }
         document.getElementById("catalogContainer").innerHTML = out || '<div class="section">Sonuç bulunamadı.</div>';
     }
 
-    function openDetail(id) {
-        const it = itemsMap[id];
-        if (!it) return;
-        stopTv();
-        document.getElementById("tvPlayerWrap").style.display = "none";
-        document.getElementById("mActions").style.display = "block";
-        document.getElementById("mTitle").innerText = it.title;
-        document.getElementById("mMeta").innerText = "★ " + it.vote + (it.year ? "  •  " + it.year : "");
-        document.getElementById("mOverview").innerText = it.overview;
-        document.getElementById("mTrailerBtn").onclick = () => window.open("https://youtube.com" + encodeURIComponent(it.title + " Türkçe fragman"), "_blank");
+    function playHero() { openItem(curHero); }
+
+    function openItem(m) {
+        stopPlayer();
+        document.getElementById("mTitle").innerText = m.title;
+        document.getElementById("mOverview").innerText = m.overview;
+        const vid = document.getElementById("videoPlayer");
+        if (m.video) {
+            vid.style.display = "block";
+            vid.src = m.video;
+            vid.play().catch(() => {});
+        } else {
+            vid.style.display = "none";
+            window.open("https://youtube.com" + encodeURIComponent(m.title + " Türkçe fragman"), "_blank");
+            return;
+        }
         document.getElementById("mFavBtn").onclick = () => {
-            const idx = watchlist.findIndex(w => w.id === it.id);
-            if (idx >= 0) watchlist.splice(idx, 1); else watchlist.unshift(it);
-            localStorage.setItem("catflix_list", JSON.stringify(watchlist));
-            alert(idx >= 0 ? "Listeden çıkarıldı." : "✅ İzleme listene eklendi!");
+            if (!watchlist.some(w => w.id === m.id)) { watchlist.unshift(m); localStorage.setItem("catflix_list", JSON.stringify(watchlist)); alert("✅ Listeye eklendi!"); }
         };
         document.getElementById("detailModal").style.display = "flex";
     }
 
-    function playLiveTv(idx) {
-        const ch = (DATA.channels || [])[idx];
-        if (!ch) return;
-        stopTv();
-        document.getElementById("mTitle").innerText = ch.name;
-        document.getElementById("mMeta").innerText = "● CANLI YAYIN";
-        document.getElementById("mOverview").innerText = "Açık kaynaklı canlı TV yayını oynatılıyor.";
-        document.getElementById("mActions").style.display = "none";
-        document.getElementById("tvPlayerWrap").style.display = "block";
-        const video = document.getElementById("tvVideo");
+    function playTv(i) { const ch = LIVE_CHANNELS[i]; if (ch) playStream(ch.name, ch.url); }
+
+    function playStream(name, url) {
+        stopPlayer();
+        document.getElementById("mTitle").innerText = "🔴 " + name;
+        document.getElementById("mOverview").innerText = "Canlı yayın akışı yükleniyor...";
+        const vid = document.getElementById("videoPlayer");
+        vid.style.display = "block";
         if (Hls.isSupported()) {
-            hlsInstance = new Hls();
-            hlsInstance.loadSource(ch.url);
-            hlsInstance.attachMedia(video);
-            hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+            hls = new Hls();
+            hls.loadSource(url);
+            hls.attachMedia(vid);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => vid.play().catch(() => {}));
         } else {
-            video.src = ch.url;
-            video.play().catch(() => {});
+            vid.src = url;
+            vid.play().catch(() => {});
         }
         document.getElementById("detailModal").style.display = "flex";
     }
 
-    function stopTv() {
-        const video = document.getElementById("tvVideo");
-        video.pause();
-        video.src = "";
-        if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+    function stopPlayer() {
+        const video = document.getElementById("videoPlayer");
+        video.pause(); video.src = "";
+        if (hls) { hls.destroy(); hls = null; }
     }
 
-    function closeModal() { stopTv(); document.getElementById("detailModal").style.display = "none"; }
-    function watchHeroTrailer() { if (heroItem) window.open("https://youtube.com" + encodeURIComponent(heroItem.title + " Türkçe fragman"), "_blank"); }
-    function openHeroDetails() { if (heroItem) openDetail(heroItem.id); }
+    function closeModal() { stopPlayer(); document.getElementById("detailModal").style.display = "none"; }
 
     loadHome();
 </script>
