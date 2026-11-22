@@ -783,7 +783,7 @@ const parsed = parseM3u(txt);
 STATE.m3uLists.push({ id: "m_" + Date.now(), name, url, enabled: true });
 STATE.channels = parsed.concat(STATE.channels);
 saveState();
-alert(✅ ${parsed.length} kanal eklendi!);
+alert(parsed.length + " kanal eklendi!");
 goPage("settings");
 }
 function uploadM3uFile(inp) {
@@ -796,7 +796,7 @@ if (parsed.length) {
 STATE.m3uLists.push({ id: "f_" + Date.now(), name: f.name, url: "Yerel Dosya", enabled: true });
 STATE.channels = parsed.concat(STATE.channels);
 saveState();
-alert(✅ Dosyadan ${parsed.length} kanal yüklendi!);
+alert("Dosyadan " + parsed.length + " kanal yüklendi!");
 goPage("settings");
 }
 };
@@ -814,8 +814,7 @@ if (src.url && src.url.startsWith("http")) {
 const txt = await fetchSmart(src.url, false);
 if (txt) all = all.concat(parseM3u(txt));
 }
-}
-if (all.length) { STATE.channels = all; saveState(); alert(✅ ${all.length} kanal güncellendi.); }
+} if (all.length) { STATE.channels = all; saveState(); alert(all.length + " kanal güncellendi."); }
 }
 async function loadEpgXml() {
 const url = document.getElementById("setEpgUrl").value.trim();
