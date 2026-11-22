@@ -15,20 +15,32 @@ jobs:
           python3 -c '
           import urllib.request, json
           KEY = "4ef0be86342c15f9d510aef2774dfe78"
+          HDR = {"User-Agent": "Mozilla/5.0"}
           def get(ep):
               sep = "&" if "?" in ep else "?"
-              return json.loads(urllib.request.urlopen(f"https://themoviedb.org{ep}{sep}api_key={KEY}&language=tr-TR").read().decode()).get("results", [])[:12]
-          data = {"trending": get("/trending/all/week"), "movies": get("/movie/popular"), "tv": get("/tv/popular"), "anime": get("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc")}
+              req = urllib.request.Request("https://themoviedb.org" + ep + sep + "api_key=" + KEY + "&language=tr-TR", headers=HDR)
+              return json.loads(urllib.request.urlopen(req).read().decode()).get("results", [])[:12]
+          data = {
+              "trending": get("/trending/all/week"),
+              "movies": get("/movie/popular"),
+              "tv": get("/tv/popular"),
+              "anime": get("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc")
+          }
           for k, lst in data.items():
               for it in lst:
                   for f in ["poster_path", "backdrop_path"]:
                       p = it.get(f)
                       if p:
                           fn = p.lstrip("/")
-                          try: urllib.request.urlretrieve(f"https://tmdb.org{fn}", f"posters/{fn}")
-                          except: pass
+                          try:
+                              r = urllib.request.Request("https://tmdb.org" + fn, headers=HDR)
+                              open("posters/" + fn, "wb").write(urllib.request.urlopen(r).read())
+                          except Exception as e:
+                              print("skip", fn, e)
           open("catalog.json", "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False))
           '
-          git config user.name "Bot" && git config user.email "bot@catflix.local"
-          git add posters catalog.json && git commit -m "afisler" || exit 0
+          git config user.name "Bot"
+          git config user.email "bot@catflix.local"
+          git add posters catalog.json
+          git commit -m "afisler" || exit 0
           git push
