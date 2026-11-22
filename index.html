@@ -93,6 +93,7 @@
         <span class="nav-item" data-page="movies" onclick="goPage('movies',this)">Filmler</span>
         <span class="nav-item" data-page="tv" onclick="goPage('tv',this)">Diziler</span>
         <span class="nav-item" data-page="livetv" onclick="goPage('livetv',this)"><span class="live-dot"></span>Canlı TV</span>
+         <span class="nav-item" data-page="freecinema" onclick="goPage('freecinema',this)">🎬 Sinema Salonu</span>
         <span class="nav-item" data-page="dubbed" onclick="goPage('dubbed',this)">Türkçe Dublaj</span>
         <span class="nav-item" data-page="imax" onclick="goPage('imax',this)">IMAX</span>
         <span class="nav-item" data-page="foryou" onclick="goPage('foryou',this)">Senin İçin</span>
@@ -228,6 +229,7 @@
         else if (page === "movies") await renderMoviesPage(view);
         else if (page === "tv") await renderTvSeriesPage(view);
         else if (page === "livetv") renderLiveTvPage(view);
+        else if (page === "freecinema") renderFreeCinemaPage(view);
         else if (page === "dubbed") await renderDubbedPage(view);
         else if (page === "imax") await renderImaxPage(view);
         else if (page === "foryou") await renderForYouPage(view);
@@ -764,6 +766,61 @@
     hlsScript.onload = async function() { await loadGenres(); await goPage("home"); };
     hlsScript.onerror = async function() { await loadGenres(); await goPage("home"); };
     document.head.appendChild(hlsScript);
+        const FREE_MOVIES = [
+        { title: "Türkçe Dublajlı Aksiyon Filmleri (Tam Uzunluk)", cat: "Aksiyon • Türkçe Dublaj", query: "aksiyon filmi türkçe dublaj tek parça full izle" },
+        { title: "Türkçe Dublajlı Bilim Kurgu Filmleri (Tam Uzunluk)", cat: "Bilim Kurgu • Türkçe Dublaj", query: "bilim kurgu filmi türkçe dublaj full izle" },
+        { title: "Türkçe Dublajlı Gerilim & Korku Filmleri", cat: "Gerilim • Türkçe Dublaj", query: "gerilim korku filmi türkçe dublaj full izle" },
+        { title: "Türkçe Dublajlı Komedi Filmleri (Tam Uzunluk)", cat: "Komedi • Türkçe Dublaj", query: "komedi filmi türkçe dublaj full izle" },
+        { title: "Arzu Film Resmi Kanalı • Kemal Sunal & Yeşilçam", cat: "Resmi Yapımcı Arşivi", query: "Arzu Film tek parça full izle" },
+        { title: "Erler Film Resmi Kanalı • Türk Sineması", cat: "Resmi Yapımcı Arşivi", query: "Erler Film tek parça full izle" },
+        { title: "Fanatik Film Yerli • Tam Uzunluk Türk Filmleri", cat: "Resmi Yapımcı Arşivi", query: "Fanatik Film Yerli tek parça full izle" },
+        { title: "Gülşah Film Resmi Kanalı • Klasik Türk Filmleri", cat: "Resmi Yapımcı Arşivi", query: "Gülşah Film tek parça full izle" }
+    ];
+
+    function renderFreeCinemaPage(view) {
+        view.innerHTML = '<div class="page-wrap">' +
+            '<div class="section"><div class="sec-title">🎬 Sinema Salonu • Tam Uzunluk Filmler & Özel Link Oynatıcı</div>' +
+            '<div class="box" style="margin-bottom:18px;">' +
+            '<div style="font-size:14px;font-weight:800;margin-bottom:8px;color:var(--red);">▶ Doğrudan YouTube / .MP4 / .M3U8 Film Linki Oynat</div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+            '<input class="field" id="customVideoUrl" style="flex:1;min-width:220px;margin:0;" placeholder="YouTube video linki veya .mp4 / .m3u8 film linki yapıştırın...">' +
+            '<button class="btn-neon" onclick="playCustomVideoUrl()">▶ Uygulamada Oynat</button></div></div>' +
+            '<div class="grid-cards">' +
+            FREE_MOVIES.map(function(m, idx) {
+                return '<div class="card" onclick="openFreeMovie(' + idx + ')">' +
+                    '<span class="pill-tl">TEK PARÇA</span>' +
+                    '<div class="card-poster" style="height:180px;">' +
+                    '<div class="card-fallback">' + m.title + '</div></div>' +
+                    '<div class="card-info"><div class="card-title">' + m.title + '</div>' +
+                    '<div class="card-sub">' + m.cat + '</div></div></div>';
+            }).join("") +
+            '</div></div></div>';
+    }
+
+    function openFreeMovie(idx) {
+        const m = FREE_MOVIES.at(idx);
+        if (!m) return;
+        const ytDomain = ["www", "youtube", "com"].join(".");
+        window.open("https://" + ytDomain + "/results?search_query=" + encodeURIComponent(m.query) + "&sp=EgIYAg%253D%253D", "_blank");
+    }
+
+    function playCustomVideoUrl() {
+        const raw = document.getElementById("customVideoUrl").value.trim();
+        if (!raw) return;
+        const modal = document.getElementById("appModal");
+        const body = document.getElementById("modalBody");
+        document.getElementById("modalTopTitle").innerText = "CATFLIX Özel Oynatıcı";
+        const ytMatch = raw.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+        if (ytMatch) {
+            const ytDomain = ["www", "youtube", "com"].join(".");
+            const src = "https://" + ytDomain + "/embed/" + ytMatch.at(1) + "?autoplay=1&hl=tr";
+            body.innerHTML = '<iframe width="100%" height="440" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+        } else {
+            body.innerHTML = '<video id="customHtml5Vid" controls autoplay playsinline src="' + raw + '" style="width:100%;max-height:72vh;background:#000;"></video>';
+        }
+        modal.style.display = "flex";
+    }
+
 </script>
 </body>
 </html>
