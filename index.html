@@ -166,12 +166,13 @@
         el.style.display = "block";
     }
 
-    function imgUrl(path, size) {
+        function imgUrl(path, size) {
         size = size || "w500";
         if (!path) return "";
         if (path.indexOf("http") === 0) return path;
-        return "https://wsrv.nl" + size + path;
+        return "https://" + "image.tmdb.org" + "/t/p/" + size + path;
     }
+
 
         async function fetchSmart(url, isJson) {
         const proxies = [
@@ -590,15 +591,17 @@
                 '<div style="font-size:11px;color:#a3a3a3;">' + (ep.overview || "") + '</div></div>';
         }).join("");
     }
-    function playTrailerInline(ytKey, title) {
+        function playTrailerInline(ytKey, title) {
         const area = document.getElementById("inlineMediaArea");
         if (!area) return;
         if (ytKey) {
-            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="360" src="https://youtube.com' + ytKey + '?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
+            const ytSrc = "https://" + "://youtube.com" + "/embed/" + ytKey + "?autoplay=1";
+            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="360" src="' + ytSrc + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
         } else {
-            window.open("https://youtube.com" + encodeURIComponent(title + " Türkçe fragman"), "_blank");
+            window.open("https://" + "://youtube.com" + "/results?search_query=" + encodeURIComponent(title + " Türkçe fragman"), "_blank");
         }
     }
+
 
     function openTrailer(type, id, title) {
         openDetail(type, id).then(function() {
@@ -779,19 +782,11 @@
     function toggleFs(id) { const v = document.getElementById(id); if (v && v.requestFullscreen) v.requestFullscreen().catch(function() {}); }
     function closeModal() { document.getElementById("appModal").style.display = "none"; document.getElementById("modalBody").innerHTML = ""; }
 
-            const hlsScript = document.createElement("script");
-    hlsScript.src = "https://" + "://unpkg.com";
-    hlsScript.onload = async function() {
-        await loadGenres();
-        await goPage("home");
-    };
-    hlsScript.onerror = async function() {
-        await loadGenres();
-        await goPage("home");
-    };
+                const hlsScript = document.createElement("script");
+    hlsScript.src = "https://" + "://cloudflare.com" + "/ajax/libs/hls.js/1.5.15/hls.min.js";
+    hlsScript.onload = async function() { await loadGenres(); await goPage("home"); };
+    hlsScript.onerror = async function() { await loadGenres(); await goPage("home"); };
     document.head.appendChild(hlsScript);
-
-
 
     (async function() { await loadGenres(); await goPage("home"); })();
 </script>
