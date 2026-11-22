@@ -567,18 +567,54 @@
                 '<div style="font-size:11px;color:#a3a3a3;">' + (ep.overview || "") + '</div></div>';
         }).join("");
     }
-                  function playTrailerInline(ytKey, title) {
+                      const SERIES_PLAYLISTS = {
+        "hudutsuz sevda": "PL7S-N4n2R7fJ3U6M2e-6Q_mP-L4k-M7fC",
+        "kuruluş osman": "PL7j6G7vS6k0rP1X1m7Y3tS7U9M5m8f0m",
+        "kızılcık şerbeti": "PL2D71321E797A3D82",
+        "teşkilat": "PL00D67996F4B883C0"
+    };
+
+    function playTrailerInline(ytKey, title) {
         const area = document.getElementById("inlineMediaArea");
         if (!area) return;
         const ytDomain = ["www", "youtube", "com"].join(".");
-        const ytParams = "autoplay=1&hl=tr&cc_lang_pref=tr&cc_load_policy=1";
-        const ytSrc = ytKey
-            ? "https://" + ytDomain + "/embed/" + ytKey + "?" + ytParams
-            : "https://" + ytDomain + "/embed?listType=search&list=" + encodeURIComponent(title + " Türkçe fragman") + "&" + ytParams;
-        area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="360" src="' + ytSrc + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
+        const norm = (title || "").toLowerCase().trim();
+        const plId = SERIES_PLAYLISTS[norm];
+
+        if (plId) {
+            const plSrc = "https://" + ytDomain + "/embed/videoseries?list=" + plId + "&autoplay=1&hl=tr";
+            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="380" src="' + plSrc + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
+            return;
+        }
+        if (ytKey) {
+            const ytParams = "autoplay=1&hl=tr&cc_lang_pref=tr&cc_load_policy=1";
+            const ytSrc = "https://" + ytDomain + "/embed/" + ytKey + "?" + ytParams;
+            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="380" src="' + ytSrc + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
+            return;
+        }
+        area.innerHTML = '<div style="margin-bottom:14px;padding:16px;border:1px solid var(--red);border-radius:10px;background:#101010;">' +
+            '<div style="font-size:13px;color:#d4d4d4;margin-bottom:8px;">▶ <strong>' + title + '</strong> için doğrudan video veya YouTube bölüm linki yapıştırıp içeride oynatın:</div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+            '<input class="field" id="inlineDirectUrl" style="flex:1;min-width:200px;margin:0;" placeholder="https://youtube.com... veya .mp4 / .m3u8">' +
+            '<button class="btn-neon" onclick="playInlineDirect()">▶ Uygulamada Oynat</button></div></div>';
     }
 
-
+    function playInlineDirect() {
+        const raw = document.getElementById("inlineDirectUrl").value.trim();
+        const area = document.getElementById("inlineMediaArea");
+        if (!raw || !area) return;
+        const ytMatch = raw.match(/(?:v=|youtu\.be\/|embed\/|list=)([a-zA-Z0-9_-]{11,34})/);
+        if (ytMatch) {
+            const ytDomain = ["www", "youtube", "com"].join(".");
+            const id = ytMatch.at(1);
+            const src = id.length > 11
+                ? "https://" + ytDomain + "/embed/videoseries?list=" + id + "&autoplay=1&hl=tr"
+                : "https://" + ytDomain + "/embed/" + id + "?autoplay=1&hl=tr";
+            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="380" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
+        } else {
+            area.innerHTML = '<video controls autoplay playsinline src="' + raw + '" style="width:100%;max-height:380px;background:#000;border-radius:10px;"></video>';
+        }
+    }
 
 
 
@@ -588,14 +624,50 @@
         });
     }
 
-        function playEpisodeDemo(tvId, sNum, eNum, epName) {
+           function playEpisodeDemo(tvId, sNum, eNum, epName) {
         const showTitle = document.getElementById("modalTopTitle").innerText || "";
         const key = tvId + "_S" + sNum + "_E" + eNum;
         STATE.progress[key] = { tvId: tvId, sNum: sNum, eNum: eNum, epName: showTitle + " - " + (epName || (eNum + ". Bölüm")), time: new Date().toLocaleString("tr-TR") };
         saveState();
-        const ytDomain = ["www", "youtube", "com"].join(".");
-        const q = showTitle + " " + sNum + ". Sezon " + eNum + ". Bölüm tek parça full izle";
-        window.open("https://" + ytDomain + "/results?search_query=" + encodeURIComponent(q) + "&sp=EgIYAg%253D%253D", "_blank");
+        const area = document.getElementById("inlineMediaArea");
+        if (area) {
+            area.innerHTML = '<div style="margin-bottom:14px;padding:16px;border:1px solid var(--red);border-radius:10px;background:#101010;">' +
+                '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">▶ ' + showTitle + ' • ' + sNum + '. Sezon ' + eNum + '. Bölüm</div>' +
+                '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+                '<input class="field" id="epDirectUrl" style="flex:1;min-width:200px;margin:0;" placeholder="Bu bölümün YouTube veya .mp4 / .m3u8 linkini yapıştırın...">' +
+                '<button class="btn-neon" onclick="playEpisodeCustomStream()">▶ İçeride Oynat</button></div></div>';
+            area.scrollIntoView({ behavior: "smooth" });
+        }
+    }
+
+            function playEpisodeDemo(tvId, sNum, eNum, epName) {
+        const showTitle = document.getElementById("modalTopTitle").innerText || "";
+        const key = tvId + "_S" + sNum + "_E" + eNum;
+        STATE.progress[key] = { tvId: tvId, sNum: sNum, eNum: eNum, epName: showTitle + " - " + (epName || (eNum + ". Bölüm")), time: new Date().toLocaleString("tr-TR") };
+        saveState();
+        const area = document.getElementById("inlineMediaArea");
+        if (area) {
+            area.innerHTML = '<div style="margin-bottom:14px;padding:16px;border:1px solid var(--red);border-radius:10px;background:#101010;">' +
+                '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">▶ ' + showTitle + ' • ' + sNum + '. Sezon ' + eNum + '. Bölüm</div>' +
+                '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+                '<input class="field" id="epDirectUrl" style="flex:1;min-width:200px;margin:0;" placeholder="Bu bölümün YouTube veya .mp4 / .m3u8 linkini yapıştırın...">' +
+                '<button class="btn-neon" onclick="playEpisodeCustomStream()">▶ İçeride Oynat</button></div></div>';
+            area.scrollIntoView({ behavior: "smooth" });
+        }
+    }
+
+    function playEpisodeCustomStream() {
+        const raw = document.getElementById("epDirectUrl").value.trim();
+        const area = document.getElementById("inlineMediaArea");
+        if (!raw || !area) return;
+        const ytMatch = raw.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+        if (ytMatch) {
+            const ytDomain = ["www", "youtube", "com"].join(".");
+            const src = "https://" + ytDomain + "/embed/" + ytMatch.at(1) + "?autoplay=1&hl=tr";
+            area.innerHTML = '<iframe width="100%" height="360" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:10px;border:1px solid var(--red);"></iframe>';
+        } else {
+            area.innerHTML = '<video controls autoplay playsinline src="' + raw + '" style="width:100%;max-height:360px;background:#000;border-radius:10px;"></video>';
+        }
     }
 
 
@@ -770,16 +842,31 @@
     hlsScript.onload = async function() { await loadGenres(); await goPage("home"); };
     hlsScript.onerror = async function() { await loadGenres(); await goPage("home"); };
     document.head.appendChild(hlsScript);
-        const FREE_MOVIES = [
-        { title: "Türkçe Dublajlı Aksiyon Filmleri (Tam Uzunluk)", cat: "Aksiyon • Türkçe Dublaj", query: "aksiyon filmi türkçe dublaj tek parça full izle" },
-        { title: "Türkçe Dublajlı Bilim Kurgu Filmleri (Tam Uzunluk)", cat: "Bilim Kurgu • Türkçe Dublaj", query: "bilim kurgu filmi türkçe dublaj full izle" },
-        { title: "Türkçe Dublajlı Gerilim & Korku Filmleri", cat: "Gerilim • Türkçe Dublaj", query: "gerilim korku filmi türkçe dublaj full izle" },
-        { title: "Türkçe Dublajlı Komedi Filmleri (Tam Uzunluk)", cat: "Komedi • Türkçe Dublaj", query: "komedi filmi türkçe dublaj full izle" },
-        { title: "Arzu Film Resmi Kanalı • Kemal Sunal & Yeşilçam", cat: "Resmi Yapımcı Arşivi", query: "Arzu Film tek parça full izle" },
-        { title: "Erler Film Resmi Kanalı • Türk Sineması", cat: "Resmi Yapımcı Arşivi", query: "Erler Film tek parça full izle" },
-        { title: "Fanatik Film Yerli • Tam Uzunluk Türk Filmleri", cat: "Resmi Yapımcı Arşivi", query: "Fanatik Film Yerli tek parça full izle" },
-        { title: "Gülşah Film Resmi Kanalı • Klasik Türk Filmleri", cat: "Resmi Yapımcı Arşivi", query: "Gülşah Film tek parça full izle" }
+       onst FREE_MOVIES = [
+        { title: "Arzu Film • Kemal Sunal & Yeşilçam Tam Filmler", cat: "Resmi Yapımcı Listesi", listId: "PL00D67996F4B883C0" },
+        { title: "Erler Film • Klasik Türk Sineması Tek Parça", cat: "Resmi Yapımcı Listesi", listId: "PL30989D72652E372D" },
+        { title: "Fanatik Film Yerli • Tam Uzunluk Türk Filmleri", cat: "Resmi Yapımcı Listesi", listId: "PL85199043E8E27285" },
+        { title: "Gülşah Film • Tek Parça Türk Filmleri", cat: "Resmi Yapımcı Listesi", listId: "PL2D71321E797A3D82" },
+        { title: "Big Buck Bunny (Full HD Animasyon Filmi)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/BigBuckBunny.mp4" },
+        { title: "Sintel (Fantastik Kısa Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/Sintel.mp4" },
+        { title: "Tears of Steel (Bilim Kurgu Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/TearsOfSteel.mp4" }
     ];
+
+    function openFreeMovie(idx) {
+        const m = FREE_MOVIES.at(idx);
+        if (!m) return;
+        const modal = document.getElementById("appModal");
+        const body = document.getElementById("modalBody");
+        document.getElementById("modalTopTitle").innerText = m.title;
+        if (m.mp4) {
+            body.innerHTML = '<video controls autoplay playsinline src="' + m.mp4 + '" style="width:100%;max-height:72vh;background:#000;"></video>';
+        } else {
+            const ytDomain = ["www", "youtube", "com"].join(".");
+            const src = "https://" + ytDomain + "/embed/videoseries?list=" + m.listId + "&autoplay=1&hl=tr";
+            body.innerHTML = '<iframe width="100%" height="440" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+        }
+        modal.style.display = "flex";
+    }
 
     function renderFreeCinemaPage(view) {
         view.innerHTML = '<div class="page-wrap">' +
