@@ -6,27 +6,28 @@
     <title>CATFLIX</title>
     <style>
         :root { --bg: #08080c; --panel: #12121a; --red: #e50914; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: var(--bg); color: #fff; padding-bottom: 40px; }
-        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(0,0,0,0.88); gap: 10px; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(0,0,0,0.9); gap: 10px; }
         .nav-left { display: flex; align-items: center; gap: 16px; overflow-x: auto; }
-        .logo { font-size: 24px; font-weight: 900; color: var(--red); cursor: pointer; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--red); cursor: pointer; letter-spacing: 1.5px; }
         .nav-link { color: #cbd5e1; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
         .nav-link.active { color: #fff; border-bottom: 2px solid var(--red); }
-        input { background: #1c1c26; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 16px; width: 130px; outline: none; }
-        .hero { position: relative; height: 65vh; min-height: 400px; background-size: cover; background-position: center top; display: flex; align-items: flex-end; padding: 24px; }
-        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.92) 20%, transparent 75%), linear-gradient(to top, var(--bg) 8%, transparent 60%); }
+        input { background: #1c1c26; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 16px; width: 135px; outline: none; }
+        .hero { position: relative; height: 64vh; min-height: 390px; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 24px; transition: 0.4s; }
+        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.92) 25%, rgba(8,8,12,0.25) 85%), linear-gradient(to top, var(--bg) 8%, transparent 65%); }
         .hero-content { position: relative; z-index: 10; max-width: 550px; }
-        .hero-title { font-size: 34px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
-        .hero-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .hero-title { font-size: 36px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
+        .hero-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; line-height: 1.5; }
         .btn-red { background: var(--red); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; margin-right: 8px; }
         .btn-glass { background: rgba(255,255,255,0.18); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
         .section { padding: 16px 20px 6px; }
         .sec-title { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
         .row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
-        .poster-card { position: relative; flex: 0 0 145px; border-radius: 10px; overflow: hidden; background: var(--panel); cursor: pointer; }
+        .poster-card { position: relative; flex: 0 0 148px; border-radius: 10px; overflow: hidden; background: var(--panel); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
+        .poster-card:hover { transform: scale(1.04); border-color: var(--red); }
         .poster-card img { width: 100%; height: 215px; object-fit: cover; display: block; }
-        .rating-pill { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.8); color: #4ade80; font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 5px; }
+        .rating-pill { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.82); color: #4ade80; font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 5px; }
         .poster-name { padding: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 60; align-items: center; justify-content: center; padding: 16px; }
         .modal-box { background: var(--panel); border: 1px solid var(--red); border-radius: 14px; max-width: 460px; width: 100%; padding: 20px; }
@@ -68,28 +69,36 @@
 </div>
 
 <script>
-    const IMG_BG = "https://wsrv.nl";
-    const IMG_POSTER = "https://wsrv.nl";
+    function makePosterArt(title, genre, c1, c2) {
+        const svg = '<svg xmlns="http://w3.org" width="300" height="430"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient></defs><rect width="300" height="430" fill="url(#g)"/><circle cx="240" cy="70" r="95" fill="rgba(255,255,255,0.08)"/><circle cx="50" cy="360" r="110" fill="rgba(0,0,0,0.28)"/><rect x="20" y="345" width="260" height="65" rx="10" fill="rgba(0,0,0,0.55)"/><text x="150" y="373" fill="#ffffff" font-family="sans-serif" font-size="16" font-weight="900" text-anchor="middle">' + title.slice(0, 22) + '</text><text x="150" y="395" fill="#e50914" font-family="sans-serif" font-size="11" font-weight="800" text-anchor="middle">' + genre + '</text></svg>';
+        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    }
+
+    function makeHeroArt(c1, c2) {
+        const svg = '<svg xmlns="http://w3.org" width="1280" height="720"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient></defs><rect width="1280" height="720" fill="url(#bg)"/><circle cx="960" cy="240" r="260" fill="rgba(255,255,255,0.07)"/><circle cx="840" cy="480" r="190" fill="rgba(229,9,20,0.16)"/></svg>';
+        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    }
+
     const BUILTIN_DATA = {
         trending: [
-            { id: 157336, title: "Yıldızlararası", vote_average: 8.5, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu.", poster_path: "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", backdrop_path: "/xJHokMbljvjADYdit5fK5VQsXEG.jpg" },
-            { id: 693134, title: "Dune: Çöl Gezegeni Bölüm İki", vote_average: 8.3, overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir.", poster_path: "/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg", backdrop_path: "/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg" },
-            { id: 27205, title: "Başlangıç", vote_average: 8.4, overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir.", poster_path: "/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg", backdrop_path: "/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg" },
-            { id: 550, title: "Dövüş Kulübü", vote_average: 8.4, overview: "Uykusuzluk çeken bir ofis çalışanı ile sabun satıcısı Tyler Durden'ın yeraltı dövüş kulübü kurmasıyla değişen hayatı.", poster_path: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg", backdrop_path: "/hZkgoQYus5vegHoetLkCJzb17zJ.jpg" },
-            { id: 155, title: "Kara Şövalye", vote_average: 8.5, overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır.", poster_path: "/qJ2tW6WMUDux911r6m7haRef0WH.jpg", backdrop_path: "/nMKdUUepR0i5zn0y1T4CsSB5chy.jpg" },
-            { id: 299536, title: "Avengers: Sonsuzluk Savaşı", vote_average: 8.3, overview: "Yenilmezler ve müttefikleri, evrenin yarısını yok etmeyi amaçlayan Thanos'u durdurmak için tüm güçlerini birleştirir.", poster_path: "/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg", backdrop_path: "/mDfJG3LC3Dqb67AZ52x3Z0jU0uB.jpg" }
+            { id: 157336, title: "Yıldızlararası", genre: "BİLİM KURGU • 2014", c1: "#0f2027", c2: "#2c5364", vote_average: 8.5, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu." },
+            { id: 693134, title: "Dune: Bölüm İki", genre: "EPİK MACERA • 2024", c1: "#614385", c2: "#b4651e", vote_average: 8.3, overview: "Paul Atreides, ailesini yok eden komploculardan intikam almak için Chani ve Fremenlerle güçlerini birleştirir." },
+            { id: 27205, title: "Başlangıç", genre: "AKSİYON / GERİLİM • 2010", c1: "#1a2a6c", c2: "#b21f1f", vote_average: 8.4, overview: "Rüyalara girerek bilinçaltındaki sırları çalan usta bir hırsıza bu kez bir fikri zihne yerleştirme görevi verilir." },
+            { id: 550, title: "Dövüş Kulübü", genre: "DRAM • 1999", c1: "#3a1c71", c2: "#d76d77", vote_average: 8.4, overview: "Uykusuzluk çeken bir ofis çalışanı ile sabun satıcısı Tyler Durden'ın yeraltı dövüş kulübü kurmasıyla değişen hayatı." },
+            { id: 155, title: "Kara Şövalye", genre: "SUÇ / AKSİYON • 2008", c1: "#141e30", c2: "#243b55", vote_average: 8.5, overview: "Batman, Gotham şehrini kaosa sürükleyen Joker'in acımasız oyunlarıyla yüzleşmek zorundadır." },
+            { id: 299536, title: "Avengers: Sonsuzluk", genre: "SÜPER KAHRAMAN • 2018", c1: "#4b134f", c2: "#c94b4b", vote_average: 8.3, overview: "Yenilmezler ve müttefikleri, evrenin yarısını yok etmeyi amaçlayan Thanos'u durdurmak için tüm güçlerini birleştirir." }
         ],
         tv: [
-            { id: 1396, name: "Breaking Bad", vote_average: 8.9, overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer.", poster_path: "/ztkUQFLlC19CCMYHW9o1zWhJRNq.jpg", backdrop_path: "/9faGSFi5jam6pDWGNd0p8JcJgXQ.jpg" },
-            { id: 1399, name: "Game of Thrones", vote_average: 8.5, overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi.", poster_path: "/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg", backdrop_path: "/2OMB0ynKlyIenMJWI2Dy9IWT4c.jpg" },
-            { id: 66732, name: "Stranger Things", vote_average: 8.6, overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar.", poster_path: "/49WJfeN0moxb9IPfGn8AIqMGskD.jpg", backdrop_path: "/56v2KjBlU4XaOv9rVYEQypROD7P.jpg" },
-            { id: 71446, name: "La Casa de Papel", vote_average: 8.3, overview: "Profesör lakaplı gizemli bir deha, İspanya Kraliyet Darphanesi'ni soymak için sekiz kişilik özel bir ekip kurar.", poster_path: "/reEMJA1uzscCbkpeRJeTT2bjqUp.jpg", backdrop_path: "/gFZriCkpJYsApPZEF3jhxL4yLzG.jpg" }
+            { id: 1396, name: "Breaking Bad", genre: "SUÇ / DRAM DİZİSİ", c1: "#134e5e", c2: "#71b280", vote_average: 8.9, overview: "Kimya öğretmeni Walter White, ailesinin geleceğini güvence altına almak için eski öğrencisiyle tehlikeli bir ortaklığa girer." },
+            { id: 1399, name: "Game of Thrones", genre: "FANTASTİK DİZİ", c1: "#232526", c2: "#414345", vote_average: 8.5, overview: "Yedi Krallık'ın Demir Tahtı için soylu hanedanlar arasında yaşanan kanlı iktidar ve ihanet mücadelesi." },
+            { id: 66732, name: "Stranger Things", genre: "GİZEM / BİLİM KURGU", c1: "#42275a", c2: "#734b6d", vote_average: 8.6, overview: "Küçük bir kasabada bir çocuğun gizemli şekilde kaybolmasıyla doğaüstü güçler ve gizli deneyler gün yüzüne çıkar." },
+            { id: 71446, name: "La Casa de Papel", genre: "SOYGUN / GERİLİM", c1: "#8e0e00", c2: "#1f1c18", vote_average: 8.3, overview: "Profesör lakaplı gizemli bir deha, İspanya Kraliyet Darphanesi'ni soymak için sekiz kişilik özel bir ekip kurar." }
         ],
         anime: [
-            { id: 1429, name: "Attack on Titan", vote_average: 8.7, overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir.", poster_path: "/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg", backdrop_path: "/rqbCbjB19amtOtFQbb3K2lgm2zv.jpg" },
-            { id: 37854, name: "One Piece", vote_average: 8.7, overview: "Monkey D. Luffy ve korsan tayfası, efsanevi hazine One Piece'i bulup Korsanlar Kralı olmak için Grand Line'a açılır.", poster_path: "/cMD9Ygz11zjJzAovURpO75Qg7rT.jpg", backdrop_path: "/2rmK7mnchw9Xr3XdiTFSxTTLXqv.jpg" },
-            { id: 85937, name: "Demon Slayer", vote_average: 8.7, overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu tekrar insana çevirmek için iblis avcısı olur.", poster_path: "/xUfRZu2mi8jH6SzQEJGP6tjBuYj.jpg", backdrop_path: "/nTvM4mhqNlHIvUkI1gVnW6XP7GG.jpg" },
-            { id: 95479, name: "Jujutsu Kaisen", vote_average: 8.6, overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak karanlık büyücülük dünyasına adım atar.", poster_path: "/hFWP5HkbVEe40hrXgtCeQxoccHE.jpg", backdrop_path: "/gmECX1DvFgdUPjtio2zaL8BPYPu.jpg" }
+            { id: 1429, name: "Attack on Titan", genre: "AKSİYON ANİME", c1: "#5a3f37", c2: "#2c7744", vote_average: 8.7, overview: "İnsanlık, dev Titanlardan korunmak için inşa ettiği devasa surların ardında hayatta kalma savaşı verir." },
+            { id: 37854, name: "One Piece", genre: "MACERA ANİME", c1: "#005c97", c2: "#363795", vote_average: 8.7, overview: "Monkey D. Luffy ve korsan tayfası, efsanevi hazine One Piece'i bulup Korsanlar Kralı olmak için Grand Line'a açılır." },
+            { id: 85937, name: "Demon Slayer", genre: "FANTASTİK ANİME", c1: "#833ab4", c2: "#fd1d1d", vote_average: 8.7, overview: "Ailesi iblisler tarafından katledilen Tanjiro, iblise dönüşen kız kardeşi Nezuko'yu tekrar insana çevirmek için iblis avcısı olur." },
+            { id: 95479, name: "Jujutsu Kaisen", genre: "DOĞAÜSTÜ ANİME", c1: "#0f0c29", c2: "#302b63", vote_average: 8.6, overview: "Lise öğrencisi Yuji Itadori, arkadaşlarını kurtarmak için lanetli bir tılsımı yutarak karanlık büyücülük dünyasına adım atar." }
         ]
     };
     let catalogData = BUILTIN_DATA, heroItems = [], heroIndex = 0, itemsMap = {};
@@ -97,7 +106,7 @@
 
     function setHero(item) {
         if (!item) return;
-        const bg = item.backdrop_path ? (IMG_BG + item.backdrop_path) : (IMG_POSTER + item.poster_path);
+        const bg = makeHeroArt(item.c1 || "#141e30", item.c2 || "#243b55");
         document.getElementById("heroBanner").style.backgroundImage = "url('" + bg + "')";
         document.getElementById("heroTitle").innerText = item.title || item.name || "CATFLIX";
         document.getElementById("heroDesc").innerText = item.overview || "";
@@ -108,30 +117,27 @@
         let html = "";
         for (let i = 0; i < items.length; i++) {
             const it = items.at(i);
-            if (!it || !it.poster_path) continue;
+            if (!it) continue;
             const key = (it.title ? "m_" : "t_") + it.id;
             itemsMap[key] = it;
             const name = it.title || it.name || "";
             const score = it.vote_average ? Number(it.vote_average).toFixed(1) : "Yeni";
+            const art = makePosterArt(name, it.genre || "CATFLIX", it.c1 || "#1e293b", it.c2 || "#0f172a");
             html += '<div class="poster-card" onclick="openDetail(\'' + key + '\')">' +
                 '<span class="rating-pill">★ ' + score + '</span>' +
-                '<img src="' + IMG_POSTER + it.poster_path + '">' +
+                '<img src="' + art + '">' +
                 '<div class="poster-name">' + name + '</div></div>';
         }
         return '<div class="section"><div class="sec-title">' + title + '</div><div class="row">' + html + '</div></div>';
     }
 
-    async function loadHome() {
-        try {
-            const res = await fetch("./catalog.json?v=" + Date.now());
-            if (res.ok) catalogData = await res.json();
-        } catch (e) {}
+    function loadHome() {
         const c = document.getElementById("catalogContainer");
-        heroItems = (catalogData.trending || []).filter(function(i) { return i.backdrop_path; });
+        heroItems = catalogData.trending || [];
         setHero(heroItems.at(0));
         c.innerHTML =
             buildRow("🔥 Haftanın Trendleri", catalogData.trending) +
-            buildRow("🎬 Popüler Filmler", catalogData.movies || catalogData.trending) +
+            buildRow("🎬 Popüler Filmler", catalogData.trending) +
             buildRow("📺 Popüler Diziler", catalogData.tv) +
             buildRow("⛩️ Popüler Animeler", catalogData.anime);
     }
@@ -145,9 +151,9 @@
             c.innerHTML = watchlist.length ? buildRow("❤️ İzleme Listem", watchlist) : '<div class="section">Listeniz henüz boş.</div>';
             return;
         }
-        if (cat === "movie") { setHero((catalogData.movies || catalogData.trending).at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", catalogData.movies || catalogData.trending); }
-        if (cat === "tv") { setHero((catalogData.tv || []).at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", catalogData.tv); }
-        if (cat === "anime") { setHero((catalogData.anime || []).at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", catalogData.anime); }
+        if (cat === "movie") { setHero(catalogData.trending.at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", catalogData.trending); }
+        if (cat === "tv") { setHero(catalogData.tv.at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", catalogData.tv); }
+        if (cat === "anime") { setHero(catalogData.anime.at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", catalogData.anime); }
     }
 
     function searchCatalog(q) {
@@ -162,7 +168,7 @@
         if (!it) return;
         const name = it.title || it.name || "";
         document.getElementById("mTitle").innerText = name;
-        document.getElementById("mMeta").innerText = "★ " + (it.vote_average ? Number(it.vote_average).toFixed(1) : "Yeni");
+        document.getElementById("mMeta").innerText = "★ " + (it.vote_average ? Number(it.vote_average).toFixed(1) : "Yeni") + "  •  " + (it.genre || "");
         document.getElementById("mOverview").innerText = it.overview || "Türkçe açıklama bulunmuyor.";
         document.getElementById("mTrailerBtn").onclick = function() { window.open("https://youtube.com" + encodeURIComponent(name + " Türkçe fragman"), "_blank"); };
         document.getElementById("mFavBtn").onclick = function() {
