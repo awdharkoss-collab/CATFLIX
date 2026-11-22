@@ -110,7 +110,7 @@
         ];
         for (let i = 0; i < proxies.length; i++) {
             try {
-                const res = await fetch(proxies[i]);
+                const res = await fetch(proxies.at(i));
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.results) return data;
@@ -134,11 +134,11 @@
         heroItems = items.filter(function(i) { return i.backdrop_path; });
         if (!heroItems.length) return;
         heroIndex = 0;
-        setHero(heroItems[0]);
+        setHero(heroItems.at(0));
         clearInterval(heroTimer);
         heroTimer = setInterval(function() {
             heroIndex = (heroIndex + 1) % heroItems.length;
-            setHero(heroItems[heroIndex]);
+            setHero(heroItems.at(heroIndex));
         }, 7000);
     }
 
@@ -146,8 +146,8 @@
         if (!items || !items.length) return "";
         let cardsHtml = "";
         for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (!item.poster_path) continue;
+            const item = items.at(i);
+            if (!item || !item.poster_path) continue;
             const mType = item.media_type || (item.title ? "movie" : "tv");
             const key = mType + "_" + item.id;
             itemsMap[key] = item;
@@ -175,13 +175,19 @@
             fetchTmdb("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc"),
             fetchTmdb("/movie/top_rated")
         ]);
-        startHeroSlider(results[0].results || []);
+        const trending = results.at(0)?.results || [];
+        const popMovies = results.at(1)?.results || [];
+        const popTv = results.at(2)?.results || [];
+        const animeTv = results.at(3)?.results || [];
+        const topRated = results.at(4)?.results || [];
+
+        startHeroSlider(trending);
         container.innerHTML =
-            buildRow("🔥 Haftanın Trendleri", results[0].results) +
-            buildRow("🎬 Popüler Filmler", results[1].results) +
-            buildRow("📺 Popüler Diziler", results[2].results) +
-            buildRow("⛩️ Popüler Animeler", results[3].results) +
-            buildRow("🏆 Tüm Zamanların En İyileri", results[4].results);
+            buildRow("🔥 Haftanın Trendleri", trending) +
+            buildRow("🎬 Popüler Filmler", popMovies) +
+            buildRow("📺 Popüler Diziler", popTv) +
+            buildRow("⛩️ Popüler Animeler", animeTv) +
+            buildRow("🏆 Tüm Zamanların En İyileri", topRated);
     }
 
     async function switchCat(el, cat) {
@@ -198,16 +204,21 @@
         container.innerHTML = '<div class="section" style="color:#94a3b8;">Yükleniyor...</div>';
         if (cat === "movie") {
             const res = await Promise.all([fetchTmdb("/movie/popular"), fetchTmdb("/movie/upcoming")]);
-            startHeroSlider(res[0].results || []);
-            container.innerHTML = buildRow("🎬 Popüler Filmler", res[0].results) + buildRow("🗓️ Yakında Vizyonda", res[1].results);
+            const p = res.at(0)?.results || [];
+            const u = res.at(1)?.results || [];
+            startHeroSlider(p);
+            container.innerHTML = buildRow("🎬 Popüler Filmler", p) + buildRow("🗓️ Yakında Vizyonda", u);
         } else if (cat === "tv") {
             const res = await Promise.all([fetchTmdb("/tv/popular"), fetchTmdb("/tv/top_rated")]);
-            startHeroSlider(res[0].results || []);
-            container.innerHTML = buildRow("📺 Popüler Diziler", res[0].results) + buildRow("⭐ En Yüksek Puanlı Diziler", res[1].results);
+            const p = res.at(0)?.results || [];
+            const t = res.at(1)?.results || [];
+            startHeroSlider(p);
+            container.innerHTML = buildRow("📺 Popüler Diziler", p) + buildRow("⭐ En Yüksek Puanlı Diziler", t);
         } else if (cat === "anime") {
             const res = await fetchTmdb("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc");
-            startHeroSlider(res.results || []);
-            container.innerHTML = buildRow("⛩️ Trend Animeler", res.results);
+            const a = res?.results || [];
+            startHeroSlider(a);
+            container.innerHTML = buildRow("⛩️ Trend Animeler", a);
         }
     }
 
@@ -250,14 +261,14 @@
     }
 
     function watchHeroTrailer() {
-        const cur = heroItems[heroIndex];
+        const cur = heroItems.at(heroIndex);
         if (!cur) return;
         const name = cur.title || cur.name;
         window.open("https://youtube.com" + encodeURIComponent(name + " Türkçe fragman"), "_blank");
     }
 
     function addHeroToList() {
-        const cur = heroItems[heroIndex];
+        const cur = heroItems.at(heroIndex);
         if (!cur) return;
         const key = (cur.media_type || "movie") + "_" + cur.id;
         itemsMap[key] = cur;
@@ -265,7 +276,7 @@
     }
 
     function openHeroDetails() {
-        const cur = heroItems[heroIndex];
+        const cur = heroItems.at(heroIndex);
         if (!cur) return;
         const key = (cur.media_type || "movie") + "_" + cur.id;
         itemsMap[key] = cur;
