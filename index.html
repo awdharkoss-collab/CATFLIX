@@ -129,14 +129,15 @@
         m3uLists: JSON.parse(localStorage.getItem("catflix_m3u_lists") || "null") || [
             { id: "def1", name: "Türkiye Açık Yayınlar", url: "https://github.io", enabled: true }
         ],
-        channels: JSON.parse(localStorage.getItem("catflix_channels") || "null") || [
-            { id: "ch1", name: "TRT 1", group: "Türkiye", logo: "", url: "https://trt.com.tr" },
-            { id: "ch2", name: "TRT Haber", group: "Haber", logo: "", url: "https://trt.com.tr" },
-            { id: "ch3", name: "TRT Spor", group: "Spor", logo: "", url: "https://trt.com.tr" },
-            { id: "ch4", name: "TRT Belgesel", group: "Belgesel", logo: "", url: "https://trt.com.tr" },
-            { id: "ch5", name: "TRT Çocuk", group: "Çocuk", logo: "", url: "https://trt.com.tr" },
-            { id: "ch6", name: "TRT Müzik", group: "Müzik", logo: "", url: "https://trt.com.tr" }
+                channels: JSON.parse(localStorage.getItem("catflix_channels") || "null") || [
+            { id: "ch1", name: "TRT Haber (Canlı)", group: "Haber", logo: "", url: "https://trt.com.tr" },
+            { id: "ch2", name: "TRT World (Canlı)", group: "Uluslararası", logo: "", url: "https://trt.com.tr" },
+            { id: "ch3", name: "NASA TV (4K Uzay)", group: "Belgesel", logo: "", url: "https://akamaized.net" },
+            { id: "ch4", name: "Red Bull TV (Spor)", group: "Spor", logo: "", url: "https://akamaized.net" },
+            { id: "ch5", name: "DW English (Haber)", group: "Haber", logo: "", url: "https://akamaized.net" },
+            { id: "ch6", name: "France 24 (Haber)", group: "Uluslararası", logo: "", url: "https://france24.com" }
         ],
+
         epgMap: {},
         watchlist: JSON.parse(localStorage.getItem("catflix_watchlist") || "[]"),
         favorites: JSON.parse(localStorage.getItem("catflix_favorites") || "[]"),
@@ -174,16 +175,15 @@
     }
 
 
-        async function fetchSmart(url, isJson) {
+            async function fetchSmart(url, isJson) {
         const proxies = [
-            "https://corsproxy.io?" + encodeURIComponent(url),
-            "https://codetabs.com" + encodeURIComponent(url),
-            "https://allorigins.win" + encodeURIComponent(url),
-            url
+            url,
+            "https://" + "://codetabs.com" + encodeURIComponent(url),
+            "https://" + "api.allorigins.win/raw?url=" + encodeURIComponent(url)
         ];
         for (let i = 0; i < proxies.length; i++) {
             const ctrl = new AbortController();
-            const timer = setTimeout(function() { ctrl.abort(); }, 10000);
+            const timer = setTimeout(function() { ctrl.abort(); }, 5000);
             try {
                 const res = await fetch(proxies.at(i), { signal: ctrl.signal });
                 clearTimeout(timer);
@@ -197,6 +197,7 @@
         }
         return null;
     }
+
 
 
             async function tmdb(path) {
