@@ -93,7 +93,7 @@
         <span class="nav-item" data-page="movies" onclick="goPage('movies',this)">Filmler</span>
         <span class="nav-item" data-page="tv" onclick="goPage('tv',this)">Diziler</span>
         <span class="nav-item" data-page="livetv" onclick="goPage('livetv',this)"><span class="live-dot"></span>Canlı TV</span>
-         <span class="nav-item" data-page="freecinema" onclick="goPage('freecinema',this)">🎬 Sinema Salonu</span>
+        <span class="nav-item" data-page="freecinema" onclick="goPage('freecinema',this)">🎬 Sinema Salonu</span>
         <span class="nav-item" data-page="dubbed" onclick="goPage('dubbed',this)">Türkçe Dublaj</span>
         <span class="nav-item" data-page="imax" onclick="goPage('imax',this)">IMAX</span>
         <span class="nav-item" data-page="foryou" onclick="goPage('foryou',this)">Senin İçin</span>
@@ -437,7 +437,7 @@
         }).join("");
     }
 
-        function selectChannel(idx) {
+    function selectChannel(idx) {
         const ch = STATE.channels.at(idx);
         if (!ch) return;
         STATE.activeChannel = ch;
@@ -475,7 +475,6 @@
         drawTvChannels(STATE.channels);
     }
 
-
     function toggleFavChannel() {
         if (!STATE.activeChannel) return;
         const u = STATE.activeChannel.url;
@@ -491,7 +490,7 @@
         body.innerHTML = '<div style="padding:30px;color:#a3a3a3;">Detaylar getiriliyor...</div>';
         modal.style.display = "flex";
 
-                const res = await Promise.all([
+        const res = await Promise.all([
             tmdb("/" + type + "/" + id),
             tmdb("/" + type + "/" + id + "/credits"),
             tmdb("/" + type + "/" + id + "/videos"),
@@ -499,7 +498,6 @@
             fetchSmart("https://" + "api.themoviedb.org" + "/3/" + type + "/" + id + "/videos?api_key=" + STATE.apiKey, true)
         ]);
         const info = res.at(0), cred = res.at(1), vid = res.at(2), sim = res.at(3), vidGlobal = res.at(4);
-
         if (!info) { body.innerHTML = '<div style="padding:24px;">İçerik bilgileri yüklenemedi.</div>'; return; }
 
         const title = info.title || info.name || "CATFLIX";
@@ -510,10 +508,9 @@
         const poster = imgUrl(info.poster_path, "w500");
         const directors = ((cred && cred.crew) || []).filter(function(c) { return c.job === "Director"; }).map(function(c) { return c.name; }).join(", ") || "Belirtilmemiş";
         const cast = ((cred && cred.cast) || []).slice(0, 10);
-      const allVids = ((vid && vid.results) || []).concat((vidGlobal && vidGlobal.results) || []);
+        const allVids = ((vid && vid.results) || []).concat((vidGlobal && vidGlobal.results) || []);
         const trailers = allVids.filter(function(v) { return v.site === "YouTube"; });
         const trailerKey = trailers.length ? trailers.at(0).key : "";
-
 
         const itemObj = { id: info.id, type: type, title: title, poster_path: info.poster_path, release_date: info.release_date || info.first_air_date, vote_average: info.vote_average, genre_ids: (info.genres || []).map(function(g) { return g.id; }) };
         STATE.history = [itemObj].concat(STATE.history.filter(function(h) { return !(h.id === info.id && h.type === type); })).slice(0, 30);
@@ -537,7 +534,7 @@
             '<p style="font-size:13px;color:#d4d4d4;line-height:1.5;margin-bottom:10px;">' + (info.overview || "Açıklama bulunmuyor.") + '</p>' +
             '<div style="font-size:12px;color:#a3a3a3;margin-bottom:14px;"><strong>Yönetmen:</strong> ' + directors + '</div>' +
             '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
-            '<button class="btn-neon" onclick="playTrailerInline(\'' + trailerKey + '\',\'' + title.replace(/'/g, "") + '\')">▶ Fragman / Oynat</button>' +
+            '<button class="btn-neon" onclick="playTrailerInline(\'' + trailerKey + '\',\'' + title.replace(/'/g, "") + '\')">▶ Oynat / Fragman</button>' +
             '<button class="btn-dark" id="btnAddWatch">+ İzleme Listesi</button>' +
             '<button class="btn-dark" id="btnAddFav">❤️ Favori</button></div></div></div></div>' +
             '<div style="padding:18px 22px;"><div id="inlineMediaArea"></div>' +
@@ -567,7 +564,7 @@
                 '<div style="font-size:11px;color:#a3a3a3;">' + (ep.overview || "") + '</div></div>';
         }).join("");
     }
-                      const SERIES_PLAYLISTS = {
+    const SERIES_PLAYLISTS = {
         "hudutsuz sevda": "PL7S-N4n2R7fJ3U6M2e-6Q_mP-L4k-M7fC",
         "kuruluş osman": "PL7j6G7vS6k0rP1X1m7Y3tS7U9M5m8f0m",
         "kızılcık şerbeti": "PL2D71321E797A3D82",
@@ -607,16 +604,12 @@
         if (ytMatch) {
             const ytDomain = ["www", "youtube", "com"].join(".");
             const id = ytMatch.at(1);
-            const src = id.length > 11
-                ? "https://" + ytDomain + "/embed/videoseries?list=" + id + "&autoplay=1&hl=tr"
-                : "https://" + ytDomain + "/embed/" + id + "?autoplay=1&hl=tr";
+            const src = id.length > 11 ? "https://" + ytDomain + "/embed/videoseries?list=" + id + "&autoplay=1&hl=tr" : "https://" + ytDomain + "/embed/" + id + "?autoplay=1&hl=tr";
             area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="380" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
         } else {
             area.innerHTML = '<video controls autoplay playsinline src="' + raw + '" style="width:100%;max-height:380px;background:#000;border-radius:10px;"></video>';
         }
     }
-
-
 
     function openTrailer(type, id, title) {
         openDetail(type, id).then(function() {
@@ -624,7 +617,7 @@
         });
     }
 
-           function playEpisodeDemo(tvId, sNum, eNum, epName) {
+    function playEpisodeDemo(tvId, sNum, eNum, epName) {
         const showTitle = document.getElementById("modalTopTitle").innerText || "";
         const key = tvId + "_S" + sNum + "_E" + eNum;
         STATE.progress[key] = { tvId: tvId, sNum: sNum, eNum: eNum, epName: showTitle + " - " + (epName || (eNum + ". Bölüm")), time: new Date().toLocaleString("tr-TR") };
@@ -634,42 +627,11 @@
             area.innerHTML = '<div style="margin-bottom:14px;padding:16px;border:1px solid var(--red);border-radius:10px;background:#101010;">' +
                 '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">▶ ' + showTitle + ' • ' + sNum + '. Sezon ' + eNum + '. Bölüm</div>' +
                 '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-                '<input class="field" id="epDirectUrl" style="flex:1;min-width:200px;margin:0;" placeholder="Bu bölümün YouTube veya .mp4 / .m3u8 linkini yapıştırın...">' +
-                '<button class="btn-neon" onclick="playEpisodeCustomStream()">▶ İçeride Oynat</button></div></div>';
+                '<input class="field" id="inlineDirectUrl" style="flex:1;min-width:200px;margin:0;" placeholder="Bu bölümün YouTube veya .mp4 / .m3u8 linkini yapıştırın...">' +
+                '<button class="btn-neon" onclick="playInlineDirect()">▶ İçeride Oynat</button></div></div>';
             area.scrollIntoView({ behavior: "smooth" });
         }
     }
-
-            function playEpisodeDemo(tvId, sNum, eNum, epName) {
-        const showTitle = document.getElementById("modalTopTitle").innerText || "";
-        const key = tvId + "_S" + sNum + "_E" + eNum;
-        STATE.progress[key] = { tvId: tvId, sNum: sNum, eNum: eNum, epName: showTitle + " - " + (epName || (eNum + ". Bölüm")), time: new Date().toLocaleString("tr-TR") };
-        saveState();
-        const area = document.getElementById("inlineMediaArea");
-        if (area) {
-            area.innerHTML = '<div style="margin-bottom:14px;padding:16px;border:1px solid var(--red);border-radius:10px;background:#101010;">' +
-                '<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px;">▶ ' + showTitle + ' • ' + sNum + '. Sezon ' + eNum + '. Bölüm</div>' +
-                '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-                '<input class="field" id="epDirectUrl" style="flex:1;min-width:200px;margin:0;" placeholder="Bu bölümün YouTube veya .mp4 / .m3u8 linkini yapıştırın...">' +
-                '<button class="btn-neon" onclick="playEpisodeCustomStream()">▶ İçeride Oynat</button></div></div>';
-            area.scrollIntoView({ behavior: "smooth" });
-        }
-    }
-
-    function playEpisodeCustomStream() {
-        const raw = document.getElementById("epDirectUrl").value.trim();
-        const area = document.getElementById("inlineMediaArea");
-        if (!raw || !area) return;
-        const ytMatch = raw.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-        if (ytMatch) {
-            const ytDomain = ["www", "youtube", "com"].join(".");
-            const src = "https://" + ytDomain + "/embed/" + ytMatch.at(1) + "?autoplay=1&hl=tr";
-            area.innerHTML = '<iframe width="100%" height="360" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:10px;border:1px solid var(--red);"></iframe>';
-        } else {
-            area.innerHTML = '<video controls autoplay playsinline src="' + raw + '" style="width:100%;max-height:360px;background:#000;border-radius:10px;"></video>';
-        }
-    }
-
 
     function toggleSavedItem(listName, item) {
         const arr = STATE[listName];
@@ -721,6 +683,70 @@
             (progList.length ? progList.map(function(p) { return '<div style="font-size:12px;padding:6px 0;border-bottom:1px solid #262626;cursor:pointer;" onclick="openDetail(\'tv\',' + p.tvId + ')">▶ Sezon ' + p.sNum + ' Bölüm ' + p.eNum + ' - ' + p.epName + '</div>'; }).join("") : '<p style="font-size:13px;color:#a3a3a3;">Henüz kayıtlı bölüm ilerlemesi yok.</p>') +
             '</div></div>' + rowSection("Son Görüntülenenler", STATE.history) + '</div></div>';
     }
+    const FREE_MOVIES = [
+        { title: "Arzu Film • Kemal Sunal & Yeşilçam Tam Filmler", cat: "Resmi Yapımcı Listesi", listId: "PL00D67996F4B883C0" },
+        { title: "Erler Film • Klasik Türk Sineması Tek Parça", cat: "Resmi Yapımcı Listesi", listId: "PL30989D72652E372D" },
+        { title: "Fanatik Film Yerli • Tam Uzunluk Türk Filmleri", cat: "Resmi Yapımcı Listesi", listId: "PL85199043E8E27285" },
+        { title: "Gülşah Film • Tek Parça Türk Filmleri", cat: "Resmi Yapımcı Listesi", listId: "PL2D71321E797A3D82" },
+        { title: "Big Buck Bunny (Full HD Animasyon Filmi)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/BigBuckBunny.mp4" },
+        { title: "Sintel (Fantastik Kısa Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/Sintel.mp4" },
+        { title: "Tears of Steel (Bilim Kurgu Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/TearsOfSteel.mp4" }
+    ];
+
+    function renderFreeCinemaPage(view) {
+        view.innerHTML = '<div class="page-wrap">' +
+            '<div class="section"><div class="sec-title">🎬 Sinema Salonu • Uygulama İçi Tam Uzunluk Filmler</div>' +
+            '<div class="box" style="margin-bottom:18px;">' +
+            '<div style="font-size:14px;font-weight:800;margin-bottom:8px;color:var(--red);">▶ Doğrudan YouTube / .MP4 / .M3U8 Film Linki Oynat</div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+            '<input class="field" id="customVideoUrl" style="flex:1;min-width:220px;margin:0;" placeholder="YouTube video/liste linki veya .mp4 / .m3u8 film linki yapıştırın...">' +
+            '<button class="btn-neon" onclick="playCustomVideoUrl()">▶ Uygulamada Oynat</button></div></div>' +
+            '<div class="grid-cards">' +
+            FREE_MOVIES.map(function(m, idx) {
+                return '<div class="card" onclick="openFreeMovie(' + idx + ')">' +
+                    '<span class="pill-tl">TEK PARÇA</span>' +
+                    '<div class="card-poster" style="height:180px;">' +
+                    '<div class="card-fallback">' + m.title + '</div></div>' +
+                    '<div class="card-info"><div class="card-title">' + m.title + '</div>' +
+                    '<div class="card-sub">' + m.cat + '</div></div></div>';
+            }).join("") +
+            '</div></div></div>';
+    }
+
+    function openFreeMovie(idx) {
+        const m = FREE_MOVIES.at(idx);
+        if (!m) return;
+        const modal = document.getElementById("appModal");
+        const body = document.getElementById("modalBody");
+        document.getElementById("modalTopTitle").innerText = m.title;
+        if (m.mp4) {
+            body.innerHTML = '<video controls autoplay playsinline src="' + m.mp4 + '" style="width:100%;max-height:72vh;background:#000;"></video>';
+        } else {
+            const ytDomain = ["www", "youtube", "com"].join(".");
+            const src = "https://" + ytDomain + "/embed/videoseries?list=" + m.listId + "&autoplay=1&hl=tr";
+            body.innerHTML = '<iframe width="100%" height="440" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+        }
+        modal.style.display = "flex";
+    }
+
+    function playCustomVideoUrl() {
+        const raw = document.getElementById("customVideoUrl").value.trim();
+        if (!raw) return;
+        const modal = document.getElementById("appModal");
+        const body = document.getElementById("modalBody");
+        document.getElementById("modalTopTitle").innerText = "CATFLIX Özel Oynatıcı";
+        const ytMatch = raw.match(/(?:v=|youtu\.be\/|embed\/|list=)([a-zA-Z0-9_-]{11,34})/);
+        if (ytMatch) {
+            const ytDomain = ["www", "youtube", "com"].join(".");
+            const id = ytMatch.at(1);
+            const src = id.length > 11 ? "https://" + ytDomain + "/embed/videoseries?list=" + id + "&autoplay=1&hl=tr" : "https://" + ytDomain + "/embed/" + id + "?autoplay=1&hl=tr";
+            body.innerHTML = '<iframe width="100%" height="440" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+        } else {
+            body.innerHTML = '<video controls autoplay playsinline src="' + raw + '" style="width:100%;max-height:72vh;background:#000;"></video>';
+        }
+        modal.style.display = "flex";
+    }
+
     function renderSettingsPage(view) {
         view.innerHTML = '<div class="page-wrap"><div class="section"><div class="sec-title">⚙ Yönetim & Uygulama Ayarları</div></div>' +
             '<div class="settings-grid">' +
@@ -804,6 +830,10 @@
         let all = [];
         for (let i = 0; i < STATE.m3uLists.length; i++) {
             const src = STATE.m3uLists.at(i);
+    async function refreshAllM3u() {
+        let all = [];
+        for (let i = 0; i < STATE.m3uLists.length; i++) {
+            const src = STATE.m3uLists.at(i);
             if (src.url && src.url.indexOf("http") === 0) {
                 const txt = await fetchSmart(src.url, false);
                 if (txt) all = all.concat(parseM3u(txt));
@@ -842,76 +872,6 @@
     hlsScript.onload = async function() { await loadGenres(); await goPage("home"); };
     hlsScript.onerror = async function() { await loadGenres(); await goPage("home"); };
     document.head.appendChild(hlsScript);
-       onst FREE_MOVIES = [
-        { title: "Arzu Film • Kemal Sunal & Yeşilçam Tam Filmler", cat: "Resmi Yapımcı Listesi", listId: "PL00D67996F4B883C0" },
-        { title: "Erler Film • Klasik Türk Sineması Tek Parça", cat: "Resmi Yapımcı Listesi", listId: "PL30989D72652E372D" },
-        { title: "Fanatik Film Yerli • Tam Uzunluk Türk Filmleri", cat: "Resmi Yapımcı Listesi", listId: "PL85199043E8E27285" },
-        { title: "Gülşah Film • Tek Parça Türk Filmleri", cat: "Resmi Yapımcı Listesi", listId: "PL2D71321E797A3D82" },
-        { title: "Big Buck Bunny (Full HD Animasyon Filmi)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/BigBuckBunny.mp4" },
-        { title: "Sintel (Fantastik Kısa Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/Sintel.mp4" },
-        { title: "Tears of Steel (Bilim Kurgu Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/TearsOfSteel.mp4" }
-    ];
-
-    function openFreeMovie(idx) {
-        const m = FREE_MOVIES.at(idx);
-        if (!m) return;
-        const modal = document.getElementById("appModal");
-        const body = document.getElementById("modalBody");
-        document.getElementById("modalTopTitle").innerText = m.title;
-        if (m.mp4) {
-            body.innerHTML = '<video controls autoplay playsinline src="' + m.mp4 + '" style="width:100%;max-height:72vh;background:#000;"></video>';
-        } else {
-            const ytDomain = ["www", "youtube", "com"].join(".");
-            const src = "https://" + ytDomain + "/embed/videoseries?list=" + m.listId + "&autoplay=1&hl=tr";
-            body.innerHTML = '<iframe width="100%" height="440" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
-        }
-        modal.style.display = "flex";
-    }
-
-    function renderFreeCinemaPage(view) {
-        view.innerHTML = '<div class="page-wrap">' +
-            '<div class="section"><div class="sec-title">🎬 Sinema Salonu • Tam Uzunluk Filmler & Özel Link Oynatıcı</div>' +
-            '<div class="box" style="margin-bottom:18px;">' +
-            '<div style="font-size:14px;font-weight:800;margin-bottom:8px;color:var(--red);">▶ Doğrudan YouTube / .MP4 / .M3U8 Film Linki Oynat</div>' +
-            '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-            '<input class="field" id="customVideoUrl" style="flex:1;min-width:220px;margin:0;" placeholder="YouTube video linki veya .mp4 / .m3u8 film linki yapıştırın...">' +
-            '<button class="btn-neon" onclick="playCustomVideoUrl()">▶ Uygulamada Oynat</button></div></div>' +
-            '<div class="grid-cards">' +
-            FREE_MOVIES.map(function(m, idx) {
-                return '<div class="card" onclick="openFreeMovie(' + idx + ')">' +
-                    '<span class="pill-tl">TEK PARÇA</span>' +
-                    '<div class="card-poster" style="height:180px;">' +
-                    '<div class="card-fallback">' + m.title + '</div></div>' +
-                    '<div class="card-info"><div class="card-title">' + m.title + '</div>' +
-                    '<div class="card-sub">' + m.cat + '</div></div></div>';
-            }).join("") +
-            '</div></div></div>';
-    }
-
-    function openFreeMovie(idx) {
-        const m = FREE_MOVIES.at(idx);
-        if (!m) return;
-        const ytDomain = ["www", "youtube", "com"].join(".");
-        window.open("https://" + ytDomain + "/results?search_query=" + encodeURIComponent(m.query) + "&sp=EgIYAg%253D%253D", "_blank");
-    }
-
-    function playCustomVideoUrl() {
-        const raw = document.getElementById("customVideoUrl").value.trim();
-        if (!raw) return;
-        const modal = document.getElementById("appModal");
-        const body = document.getElementById("modalBody");
-        document.getElementById("modalTopTitle").innerText = "CATFLIX Özel Oynatıcı";
-        const ytMatch = raw.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-        if (ytMatch) {
-            const ytDomain = ["www", "youtube", "com"].join(".");
-            const src = "https://" + ytDomain + "/embed/" + ytMatch.at(1) + "?autoplay=1&hl=tr";
-            body.innerHTML = '<iframe width="100%" height="440" src="' + src + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
-        } else {
-            body.innerHTML = '<video id="customHtml5Vid" controls autoplay playsinline src="' + raw + '" style="width:100%;max-height:72vh;background:#000;"></video>';
-        }
-        modal.style.display = "flex";
-    }
-
 </script>
 </body>
 </html>
