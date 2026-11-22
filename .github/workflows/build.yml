@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - '.github/workflows/build_apk.yml'
+           - '.github/workflows/build.yml'
 jobs:
   apk:
     runs-on: ubuntu-latest
