@@ -556,17 +556,19 @@
                 '<div style="font-size:11px;color:#a3a3a3;">' + (ep.overview || "") + '</div></div>';
         }).join("");
     }
-       function playTrailerInline(ytKey, title) {
+           function playTrailerInline(ytKey, title) {
         const area = document.getElementById("inlineMediaArea");
         if (!area) return;
+        const ytDomain = ["www", "youtube", "com"].join(".");
         if (ytKey) {
-            const ytSrc = "https:" + "//" + "://youtube-nocookie.com" + ytKey + "?autoplay=1";
-            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="360" src="' + ytSrc + '" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>';
+            const ytSrc = "https://" + ytDomain + "/embed/" + ytKey + "?autoplay=1";
+            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="360" src="' + ytSrc + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
         } else {
-            const searchUrl = "https:" + "//" + "://youtube.com" + encodeURIComponent(title + " Türkçe fragman");
+            const searchUrl = "https://" + ytDomain + "/results?search_query=" + encodeURIComponent(title + " Türkçe fragman");
             window.open(searchUrl, "_blank");
         }
     }
+
 
 
     function openTrailer(type, id, title) {
