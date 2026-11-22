@@ -2,79 +2,129 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Film Uygulaması</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CATFLIX</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
-        body { background-color: #121212; color: #fff; padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto 30px; gap: 15px; flex-wrap: wrap; }
-        h1 { color: #e50914; font-size: 24px; }
-        input { padding: 10px 15px; border-radius: 6px; border: none; width: 100%; max-width: 300px; font-size: 16px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .card { background: #1e1e1e; border-radius: 8px; overflow: hidden; transition: transform 0.2s; }
-        .card:hover { transform: scale(1.03); }
-        .card img { width: 100%; height: 300px; object-fit: cover; display: block; background: #2c2c2c; }
-        .info { padding: 12px; }
-        .title { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
-        .meta { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; }
-        .rating { color: #f5c518; font-weight: bold; }
+        :root { --bg: #0b0b0f; --panel: #14141c; --red: #e50914; --text: #f8fafc; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+        header { position: sticky; top: 0; z-index: 20; background: rgba(11,11,15,0.95); backdrop-filter: blur(8px); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(229,9,20,0.3); }
+        .brand { font-size: 24px; font-weight: 900; color: var(--red); letter-spacing: 2px; cursor: pointer; }
+        .search-box { flex: 1; max-width: 340px; }
+        .search-box input { width: 100%; background: #1c1c26; color: #fff; border: 1px solid #333; padding: 10px 14px; border-radius: 10px; font-size: 14px; outline: none; }
+        .search-box input:focus { border-color: var(--red); }
+        .cats { display: flex; gap: 8px; overflow-x: auto; padding: 12px 20px; scrollbar-width: none; }
+        .cats::-webkit-scrollbar { display: none; }
+        .cat-btn { background: var(--panel); color: #cbd5e1; border: 1px solid #272734; padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .cat-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 16px; padding: 10px 20px 30px; }
+        .card { background: var(--panel); border-radius: 12px; overflow: hidden; border: 1px solid #22222e; cursor: pointer; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-4px); border-color: var(--red); }
+        .card img { width: 100%; height: 225px; object-fit: cover; background: #1a1a24; display: block; }
+        .card-body { padding: 10px; }
+        .card-title { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+        .card-meta { font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 50; align-items: center; justify-content: center; padding: 16px; }
+        .modal-card { background: var(--panel); border: 1px solid var(--red); border-radius: 16px; max-width: 460px; width: 100%; overflow: hidden; }
+        .modal-body { padding: 16px; }
+        .close-btn { background: var(--red); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 800; width: 100%; margin-top: 12px; cursor: pointer; }
     </style>
 </head>
 <body>
+<header>
+    <div class="brand" onclick="loadPopular()">🎬 CATFLIX</div>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Dizi veya film ara..." oninput="handleSearch(this.value)">
+    </div>
+</header>
 
-    <header>
-        <h1>Film Keşfet</h1>
-        <input type="text" id="searchInput" placeholder="Film ara...">
-    </header>
+<div class="cats">
+    <button type="button" class="cat-btn active" onclick="filterGenre(this, 'ALL')">🔥 Popüler</button>
+    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Action')">💥 Aksiyon</button>
+    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Drama')">🎭 Dram</button>
+    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Science-Fiction')">🚀 Bilim Kurgu</button>
+    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Crime')">🕵️‍♂️ Suç & Polisiye</button>
+    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Comedy')">😂 Komedi</button>
+</div>
 
-    <div class="grid" id="movieGrid"></div>
+<div class="grid" id="grid"></div>
 
-    <script>
-        const API_KEY = 'BURAYA_API_ANAHTARINIZI_YAZIN';
-        const BASE_URL = 'https://themoviedb.org';
-        const IMG_URL = 'https://tmdb.org';
+<div class="modal" id="detailModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-card">
+        <div class="modal-body">
+            <h2 id="mTitle" style="color:#fff; margin-bottom:6px;"></h2>
+            <div id="mMeta" style="font-size:12px; color:#facc15; margin-bottom:10px;"></div>
+            <p id="mSummary" style="font-size:13px; color:#cbd5e1; line-height:1.5; max-height:180px; overflow-y:auto;"></p>
+            <button type="button" class="close-btn" onclick="closeModal()">Kapat</button>
+        </div>
+    </div>
+</div>
 
-        const movieGrid = document.getElementById('movieGrid');
-        const searchInput = document.getElementById('searchInput');
+<script>
+    let allShows = [];
+    let searchTimer = null;
 
-        // Sayfa açıldığında popüler filmleri getir
-        getMovies(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=tr-TR&page=1`);
+    async function loadPopular() {
+        document.getElementById("searchInput").value = "";
+        const grid = document.getElementById("grid");
+        grid.innerHTML = `<div style="color:#94a3b8; padding:20px;">Yükleniyor...</div>`;
+        const res = await fetch("https://tvmaze.com");
+        const data = await res.json();
+        allShows = data.slice(0, 60);
+        renderShows(allShows);
+    }
 
-        // Arama kutusuna yazıldıkça filmleri filtrele
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.trim();
-            if (query) {
-                getMovies(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=tr-TR&query=${encodeURIComponent(query)}`);
-            } else {
-                getMovies(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=tr-TR&page=1`);
-            }
-        });
+    function filterGenre(btn, genre) {
+        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (genre === "ALL") { renderShows(allShows); return; }
+        renderShows(allShows.filter(s => (s.genres || []).includes(genre)));
+    }
 
-        async function getMovies(url) {
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                renderMovies(data.results || []);
-            } catch (err) {
-                movieGrid.innerHTML = '<p>Veri çekilirken hata oluştu. API anahtarınızı kontrol edin.</p>';
-            }
+    function handleSearch(q) {
+        clearTimeout(searchTimer);
+        if (!q.trim()) { renderShows(allShows); return; }
+        searchTimer = setTimeout(async () => {
+            const res = await fetch(`https://tvmaze.com{encodeURIComponent(q.trim())}`);
+            const data = await res.json();
+            renderShows(data.map(item => item.show));
+        }, 300);
+    }
+
+    function renderShows(list) {
+        const grid = document.getElementById("grid");
+        if (!list.length) {
+            grid.innerHTML = `<div style="color:#94a3b8; padding:20px;">Sonuç bulunamadı.</div>`;
+            return;
         }
-
-        function renderMovies(movies) {
-            movieGrid.innerHTML = movies.map(movie => `
-                <div class="card">
-                    <img src="${movie.poster_path ? IMG_URL + movie.poster_path : 'https://placeholder.com'}" alt="${movie.title}">
-                    <div class="info">
-                        <div class="title">${movie.title}</div>
-                        <div class="meta">
-                            <span>${movie.release_date ? movie.release_date.split('-')[0] : '-'}</span>
-                            <span class="rating">★ ${movie.vote_average ? movie.vote_average.toFixed(1) : '0.0'}</span>
-                        </div>
+        grid.innerHTML = list.map((s, idx) => {
+            const img = s.image?.medium || "https://placeholder.com";
+            const rating = s.rating?.average ? `⭐ ${s.rating.average}` : "⭐ Yeni";
+            const year = s.premiered ? s.premiered.slice(0, 4) : "";
+            return `
+                <div class="card" onclick='openDetail(${JSON.stringify({ name: s.name, rating, year, genres: (s.genres || []).join(", "), summary: (s.summary || "Açıklama bulunmuyor.").replace(/<[^>]*>/g, "") }).replace(/'/g, "&#39;")})'>
+                    <img src="${img}" alt="${s.name}" loading="lazy">
+                    <div class="card-body">
+                        <div class="card-title">${s.name}</div>
+                        <div class="card-meta"><span>${year}</span><span>${rating}</span></div>
                     </div>
                 </div>
-            `).join('');
-        }
-    </script>
+            `;
+        }).join("");
+    }
+
+    function openDetail(item) {
+        document.getElementById("mTitle").innerText = item.name;
+        document.getElementById("mMeta").innerText = `${item.rating}  •  ${item.year}  •  ${item.genres}`;
+        document.getElementById("mSummary").innerText = item.summary;
+        document.getElementById("detailModal").style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById("detailModal").style.display = "none";
+    }
+
+    loadPopular();
+</script>
 </body>
 </html>
-
