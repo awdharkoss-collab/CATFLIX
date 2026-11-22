@@ -129,14 +129,13 @@
         m3uLists: JSON.parse(localStorage.getItem("catflix_m3u_lists") || "null") || [
             { id: "def1", name: "Türkiye Açık Yayınlar", url: "https://github.io", enabled: true }
         ],
-                channels: JSON.parse(localStorage.getItem("catflix_channels") || "null") || [
-            { id: "ch1", name: "TRT Haber (Canlı)", group: "Haber", logo: "", url: "https://trt.com.tr" },
-            { id: "ch2", name: "TRT World (Canlı)", group: "Uluslararası", logo: "", url: "https://trt.com.tr" },
-            { id: "ch3", name: "NASA TV (4K Uzay)", group: "Belgesel", logo: "", url: "https://akamaized.net" },
-            { id: "ch4", name: "Red Bull TV (Spor)", group: "Spor", logo: "", url: "https://akamaized.net" },
-            { id: "ch5", name: "DW English (Haber)", group: "Haber", logo: "", url: "https://akamaized.net" },
-            { id: "ch6", name: "France 24 (Haber)", group: "Uluslararası", logo: "", url: "https://france24.com" }
+                        channels: JSON.parse(localStorage.getItem("catflix_channels_v2") || "null") || [
+            { id: "ch1", name: "NASA TV (4K Uzay)", group: "Belgesel", logo: "", url: "https://akamaized.net" },
+            { id: "ch2", name: "Red Bull TV (Spor)", group: "Spor", logo: "", url: "https://akamaized.net" },
+            { id: "ch3", name: "DW English (Haber)", group: "Haber", logo: "", url: "https://akamaized.net" },
+            { id: "ch4", name: "France 24 (Haber)", group: "Uluslararası", logo: "", url: "https://france24.com" }
         ],
+
 
         epgMap: {},
         watchlist: JSON.parse(localStorage.getItem("catflix_watchlist") || "[]"),
@@ -152,7 +151,7 @@
         localStorage.setItem("catflix_lang", STATE.lang);
         localStorage.setItem("catflix_epg_url", STATE.epgUrl);
         localStorage.setItem("catflix_m3u_lists", JSON.stringify(STATE.m3uLists));
-        localStorage.setItem("catflix_channels", JSON.stringify(STATE.channels));
+        localStorage.setItem("catflix_channels_v2", JSON.stringify(STATE.channels));
         localStorage.setItem("catflix_watchlist", JSON.stringify(STATE.watchlist));
         localStorage.setItem("catflix_favorites", JSON.stringify(STATE.favorites));
         localStorage.setItem("catflix_fav_ch", JSON.stringify(STATE.favChannels));
