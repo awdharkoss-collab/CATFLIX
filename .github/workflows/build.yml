@@ -10,17 +10,17 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
       - uses: android-actions/setup-android@v3
       - name: CATFLIX APK Derle
         run: |
           pip install -q pillow
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
           mkdir -p www
           cp index.html www/index.html
-          npx cap init "CATFLIX" "com.catflix.app" --web-dir www
-          npx cap add android
+          npx --yes cap init "CATFLIX" "com.catflix.app" --web-dir www
+          npx --yes cap add android
           python3 -c '
           from PIL import Image, ImageDraw
           import glob
@@ -37,7 +37,7 @@ jobs:
           m = "android/app/src/main/AndroidManifest.xml"
           open(m, "w").write(open(m).read().replace("<application", "<application android:usesCleartextTraffic=\"true\""))
           '
-          npx cap copy android
+          npx --yes cap copy android
           cd android && chmod +x gradlew && ./gradlew assembleDebug
       - name: CATFLIX APK Yukle
         uses: actions/upload-artifact@v4
