@@ -3,128 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CATFLIX</title>
+    <title>CATFLIX • Türkçe Film, Dizi & Anime</title>
     <style>
-        :root { --bg: #0b0b0f; --panel: #14141c; --red: #e50914; --text: #f8fafc; }
+        :root { --bg: #08080c; --panel: #12121a; --red: #e50914; --text: #ffffff; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; }
-        header { position: sticky; top: 0; z-index: 20; background: rgba(11,11,15,0.95); backdrop-filter: blur(8px); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(229,9,20,0.3); }
-        .brand { font-size: 24px; font-weight: 900; color: var(--red); letter-spacing: 2px; cursor: pointer; }
-        .search-box { flex: 1; max-width: 340px; }
-        .search-box input { width: 100%; background: #1c1c26; color: #fff; border: 1px solid #333; padding: 10px 14px; border-radius: 10px; font-size: 14px; outline: none; }
-        .search-box input:focus { border-color: var(--red); }
-        .cats { display: flex; gap: 8px; overflow-x: auto; padding: 12px 20px; scrollbar-width: none; }
-        .cats::-webkit-scrollbar { display: none; }
-        .cat-btn { background: var(--panel); color: #cbd5e1; border: 1px solid #272734; padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-        .cat-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 16px; padding: 10px 20px 30px; }
-        .card { background: var(--panel); border-radius: 12px; overflow: hidden; border: 1px solid #22222e; cursor: pointer; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-4px); border-color: var(--red); }
-        .card img { width: 100%; height: 225px; object-fit: cover; background: #1a1a24; display: block; }
-        .card-body { padding: 10px; }
-        .card-title { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-        .card-meta { font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 50; align-items: center; justify-content: center; padding: 16px; }
-        .modal-card { background: var(--panel); border: 1px solid var(--red); border-radius: 16px; max-width: 460px; width: 100%; overflow: hidden; }
-        .modal-body { padding: 16px; }
-        .close-btn { background: var(--red); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 800; width: 100%; margin-top: 12px; cursor: pointer; }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; padding-bottom: 40px; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: linear-gradient(to bottom, rgba(0,0,0,0.92), transparent); gap: 12px; }
+        .nav-left { display: flex; align-items: center; gap: 18px; overflow-x: auto; scrollbar-width: none; }
+        .nav-left::-webkit-scrollbar { display: none; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--red); letter-spacing: 2px; cursor: pointer; text-shadow: 0 2px 12px rgba(229,9,20,0.5); white-space: nowrap; }
+        .nav-links { display: flex; gap: 14px; }
+        .nav-link { color: #cbd5e1; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: 0.2s; padding-bottom: 4px; border-bottom: 2px solid transparent; }
+        .nav-link:hover, .nav-link.active { color: #fff; border-bottom-color: var(--red); }
+        .search-wrap { display: flex; align-items: center; background: rgba(20,20,28,0.85); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 12px; }
+        .search-wrap input { background: transparent; border: none; color: #fff; font-size: 13px; outline: none; width: 135px; }
+        .hero { position: relative; width: 100%; height: 70vh; min-height: 430px; background-size: cover; background-position: center top; display: flex; align-items: flex-end; padding: 0 24px 44px; transition: background-image 0.6s ease; }
+        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.95) 20%, rgba(8,8,12,0.3) 65%, rgba(8,8,12,0.7) 100%), linear-gradient(to top, var(--bg) 5%, transparent 55%); }
+        .hero-content { position: relative; z-index: 10; max-width: 560px; }
+        .badge { display: inline-block; background: var(--red); color: #fff; font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 4px; letter-spacing: 1.5px; margin-bottom: 10px; }
+        .hero-title { font-size: clamp(24px, 5vw, 46px); font-weight: 900; line-height: 1.1; margin-bottom: 12px; text-transform: uppercase; }
+        .hero-desc { font-size: 13px; color: #cbd5e1; line-height: 1.55; margin-bottom: 18px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-red { background: var(--red); color: #fff; border: none; padding: 11px 20px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-glass { background: rgba(255,255,255,0.14); backdrop-filter: blur(8px); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 11px 16px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; }
+        .section { padding: 16px 20px 8px; }
+        .sec-title { font-size: 17px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+        .row::-webkit-scrollbar { display: none; }
+        .poster-card { position: relative; flex: 0 0 150px; border-radius: 10px; overflow: hidden; background: var(--panel); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: transform 0.25s, border-color 0.25s; }
+        .poster-card:hover { transform: scale(1.05); border-color: var(--red); }
+        .poster-card img { width: 100%; height: 225px; object-fit: cover; display: block; }
+        .rating-pill { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.78); backdrop-filter: blur(4px); color: #4ade80; font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 6px; }
+        .fav-pill { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.78); color: #fff; border: none; width: 28px; height: 28px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+        .poster-info { padding: 8px; }
+        .poster-name { font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 60; align-items: center; justify-content: center; padding: 16px; }
+        .modal-box { background: var(--panel); border: 1px solid var(--red); border-radius: 16px; max-width: 500px; width: 100%; overflow: hidden; }
     </style>
 </head>
 <body>
-<header>
-    <div class="brand" onclick="loadPopular()">🎬 CATFLIX</div>
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Dizi veya film ara..." oninput="handleSearch(this.value)">
+<nav>
+    <div class="nav-left">
+        <div class="logo" onclick="loadHome()">CATFLIX</div>
+        <div class="nav-links">
+            <span class="nav-link active" onclick="switchCat(this, 'home')">Ana Sayfa</span>
+            <span class="nav-link" onclick="switchCat(this, 'movie')">Filmler</span>
+            <span class="nav-link" onclick="switchCat(this, 'tv')">Diziler</span>
+            <span class="nav-link" onclick="switchCat(this, 'anime')">Anime</span>
+            <span class="nav-link" onclick="switchCat(this, 'watchlist')">İzleme Listem</span>
+        </div>
     </div>
-</header>
+    <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Film, dizi ara..." oninput="searchCatalog(this.value)">
+        <span>🔍</span>
+    </div>
+</nav>
 
-<div class="cats">
-    <button type="button" class="cat-btn active" onclick="filterGenre(this, 'ALL')">🔥 Popüler</button>
-    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Action')">💥 Aksiyon</button>
-    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Drama')">🎭 Dram</button>
-    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Science-Fiction')">🚀 Bilim Kurgu</button>
-    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Crime')">🕵️‍♂️ Suç & Polisiye</button>
-    <button type="button" class="cat-btn" onclick="filterGenre(this, 'Comedy')">😂 Komedi</button>
-</div>
-
-<div class="grid" id="grid"></div>
-
-<div class="modal" id="detailModal" onclick="if(event.target===this) closeModal()">
-    <div class="modal-card">
-        <div class="modal-body">
-            <h2 id="mTitle" style="color:#fff; margin-bottom:6px;"></h2>
-            <div id="mMeta" style="font-size:12px; color:#facc15; margin-bottom:10px;"></div>
-            <p id="mSummary" style="font-size:13px; color:#cbd5e1; line-height:1.5; max-height:180px; overflow-y:auto;"></p>
-            <button type="button" class="close-btn" onclick="closeModal()">Kapat</button>
+<div class="hero" id="heroBanner">
+    <div class="hero-content">
+        <div class="badge" id="heroBadge">BU HAFTA TREND</div>
+        <h1 class="hero-title" id="heroTitle">CATFLIX YÜKLENİYOR...</h1>
+        <p class="hero-desc" id="heroDesc">Haftanın trend filmleri, dizileri ve animeleri Türkçe açıklamalarıyla hazırlanıyor...</p>
+        <div class="hero-btns">
+            <button type="button" class="btn-red" onclick="watchHeroTrailer()">▶ Fragmanı İzle</button>
+            <button type="button" class="btn-glass" onclick="addHeroToList()">+ Listeme Ekle</button>
+            <button type="button" class="btn-glass" onclick="openHeroDetails()">ⓘ Detaylar</button>
         </div>
     </div>
 </div>
 
+<div id="catalogContainer"></div>
+
+<div class="modal" id="detailModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-box">
+        <div style="padding:20px;">
+            <h2 id="mTitle" style="margin-bottom:6px;"></h2>
+            <div id="mMeta" style="font-size:12px; color:#4ade80; margin-bottom:12px;"></div>
+            <p id="mOverview" style="font-size:13px; color:#cbd5e1; line-height:1.6; max-height:200px; overflow-y:auto; margin-bottom:16px;"></p>
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn-red" style="flex:1; justify-content:center;" id="mTrailerBtn">▶ YouTube Fragman</button>
+                <button type="button" class="btn-glass" onclick="closeModal()">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
-    let allShows = [];
-    let searchTimer = null;
+    const API_KEY = "4ef0be86342c15f9d510aef2774dfe78";
+    const BASE_URL = "https://themoviedb.org";
+    const IMG_BACKDROP = "https://tmdb.org";
+    const IMG_POSTER = "https://tmdb.org";
 
-    async function loadPopular() {
-        document.getElementById("searchInput").value = "";
-        const grid = document.getElementById("grid");
-        grid.innerHTML = `<div style="color:#94a3b8; padding:20px;">Yükleniyor...</div>`;
-        const res = await fetch("https://tvmaze.com");
-        const data = await res.json();
-        allShows = data.slice(0, 60);
-        renderShows(allShows);
+    let heroItems = [];
+    let heroIndex = 0;
+    let heroTimer = null;
+    let itemsMap = {};
+    let watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
+
+    async function fetchTmdb(endpoint) {
+        const sep = endpoint.includes("?") ? "&" : "?";
+        const res = await fetch(`${BASE_URL}${endpoint}${sep}api_key=${API_KEY}&language=tr-TR`);
+        return res.json();
     }
 
-    function filterGenre(btn, genre) {
-        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        if (genre === "ALL") { renderShows(allShows); return; }
-        renderShows(allShows.filter(s => (s.genres || []).includes(genre)));
+    function setHero(item) {
+        if (!item) return;
+        const banner = document.getElementById("heroBanner");
+        const bg = item.backdrop_path ? `${IMG_BACKDROP}${item.backdrop_path}` : `${IMG_POSTER}${item.poster_path}`;
+        banner.style.backgroundImage = `url('${bg}')`;
+        document.getElementById("heroBadge").innerText = item.media_type === "tv" ? "BU HAFTA TREND DİZİ" : "BU HAFTA TREND FİLM";
+        document.getElementById("heroTitle").innerText = item.title || item.name || "CATFLIX";
+        document.getElementById("heroDesc").innerText = item.overview || "Bu yapım için Türkçe özet bilgisi yakında eklenecektir.";
     }
 
-    function handleSearch(q) {
-        clearTimeout(searchTimer);
-        if (!q.trim()) { renderShows(allShows); return; }
-        searchTimer = setTimeout(async () => {
-            const res = await fetch(`https://tvmaze.com{encodeURIComponent(q.trim())}`);
-            const data = await res.json();
-            renderShows(data.map(item => item.show));
-        }, 300);
+    function startHeroSlider(items) {
+        heroItems = items.filter(i => i.backdrop_path);
+        if (!heroItems.length) return;
+        heroIndex = 0;
+        setHero(heroItems.at(0));
+        clearInterval(heroTimer);
+        heroTimer = setInterval(() => {
+            heroIndex = (heroIndex + 1) % heroItems.length;
+            setHero(heroItems.at(heroIndex));
+        }, 7000);
     }
 
-    function renderShows(list) {
-        const grid = document.getElementById("grid");
-        if (!list.length) {
-            grid.innerHTML = `<div style="color:#94a3b8; padding:20px;">Sonuç bulunamadı.</div>`;
-            return;
-        }
-        grid.innerHTML = list.map((s, idx) => {
-            const img = s.image?.medium || "https://placeholder.com";
-            const rating = s.rating?.average ? `⭐ ${s.rating.average}` : "⭐ Yeni";
-            const year = s.premiered ? s.premiered.slice(0, 4) : "";
+    function buildRow(title, items) {
+        if (!items || !items.length) return "";
+        const cards = items.filter(i => i.poster_path).map(item => {
+            const key = `${item.media_type || (item.title ? "movie" : "tv")}_${item.id}`;
+            itemsMap[key] = item;
+            const name = item.title || item.name || "";
+            const score = item.vote_average ? item.vote_average.toFixed(1) : "Yeni";
+            const isSaved = watchlist.some(w => w.id === item.id);
+
             return `
-                <div class="card" onclick='openDetail(${JSON.stringify({ name: s.name, rating, year, genres: (s.genres || []).join(", "), summary: (s.summary || "Açıklama bulunmuyor.").replace(/<[^>]*>/g, "") }).replace(/'/g, "&#39;")})'>
-                    <img src="${img}" alt="${s.name}" loading="lazy">
-                    <div class="card-body">
-                        <div class="card-title">${s.name}</div>
-                        <div class="card-meta"><span>${year}</span><span>${rating}</span></div>
+                <div class="poster-card" onclick="openDetailByKey('${key}')">
+                    <span class="rating-pill">★ ${score}</span>
+                    <button type="button" class="fav-pill" onclick="event.stopPropagation(); toggleWatchlistByKey('${key}')">${isSaved ? "❤️" : "🔖"}</button>
+                    <img src="${IMG_POSTER}${item.poster_path}" alt="${name}" loading="lazy">
+                    <div class="poster-info">
+                        <div class="poster-name">${name}</div>
                     </div>
                 </div>
             `;
         }).join("");
+
+        return `<div class="section"><div class="sec-title">${title}</div><div class="row">${cards}</div></div>`;
     }
 
-    function openDetail(item) {
-        document.getElementById("mTitle").innerText = item.name;
-        document.getElementById("mMeta").innerText = `${item.rating}  •  ${item.year}  •  ${item.genres}`;
-        document.getElementById("mSummary").innerText = item.summary;
+    async function loadHome() {
+        const container = document.getElementById("catalogContainer");
+        container.innerHTML = `<div class="section" style="color:#94a3b8;">Katalog yükleniyor...</div>`;
+        const [trending, popMovies, popTv, animeTv, topRated] = await Promise.all([
+            fetchTmdb("/trending/all/week"),
+            fetchTmdb("/movie/popular"),
+            fetchTmdb("/tv/popular"),
+            fetchTmdb("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc"),
+            fetchTmdb("/movie/top_rated")
+        ]);
+        startHeroSlider(trending.results || []);
+        container.innerHTML =
+            buildRow("🔥 Haftanın Trendleri", trending.results) +
+            buildRow("🎬 Popüler Filmler", popMovies.results) +
+            buildRow("📺 Popüler Diziler", popTv.results) +
+            buildRow("⛩️ Popüler Animeler", animeTv.results) +
+            buildRow("🏆 Tüm Zamanların En İyileri", topRated.results);
+    }
+
+    async function switchCat(el, cat) {
+        document.querySelectorAll(".nav-link").forEach(n => n.classList.remove("active"));
+        el.classList.add("active");
+        const container = document.getElementById("catalogContainer");
+        if (cat === "home") { loadHome(); return; }
+        if (cat === "watchlist") {
+            container.innerHTML = watchlist.length
+                ? buildRow("❤️ İzleme Listem", watchlist)
+                : `<div class="section" style="color:#94a3b8;">İzleme listen henüz boş. Afişlerin sağ üstündeki 🔖 simgesine dokunarak ekleyebilirsin.</div>`;
+            return;
+        }
+        if (cat === "movie") {
+            const [p, u] = await Promise.all([fetchTmdb("/movie/popular"), fetchTmdb("/movie/upcoming")]);
+            startHeroSlider(p.results || []);
+            container.innerHTML = buildRow("🎬 Popüler Filmler", p.results) + buildRow("🗓️ Yakında Vizyonda", u.results);
+        } else if (cat === "tv") {
+            const [p, t] = await Promise.all([fetchTmdb("/tv/popular"), fetchTmdb("/tv/top_rated")]);
+            startHeroSlider(p.results || []);
+            container.innerHTML = buildRow("📺 Popüler Diziler", p.results) + buildRow("⭐ En Yüksek Puanlı Diziler", t.results);
+        } else if (cat === "anime") {
+            const a = await fetchTmdb("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc");
+            startHeroSlider(a.results || []);
+            container.innerHTML = buildRow("⛩️ Trend Animeler", a.results);
+        }
+    }
+
+    let searchTimer = null;
+    function searchCatalog(q) {
+        clearTimeout(searchTimer);
+        if (!q.trim()) { loadHome(); return; }
+        searchTimer = setTimeout(async () => {
+            const data = await fetchTmdb(`/search/multi?query=${encodeURIComponent(q.trim())}`);
+            document.getElementById("catalogContainer").innerHTML = buildRow(`🔍 "${q}" Arama Sonuçları`, data.results);
+        }, 350);
+    }
+
+    function openDetailByKey(key) {
+        const item = itemsMap[key];
+        if (!item) return;
+        const name = item.title || item.name || "";
+        const score = item.vote_average ? Number(item.vote_average).toFixed(1) : "Yeni";
+        const year = (item.release_date || item.first_air_date || "").slice(0, 4);
+        const typeLabel = (item.media_type === "tv" || !item.title) ? "Dizi" : "Film";
+        document.getElementById("mTitle").innerText = name;
+        document.getElementById("mMeta").innerText = `★ ${score}  •  ${year}  •  ${typeLabel}`;
+        document.getElementById("mOverview").innerText = item.overview || "Bu yapım için Türkçe açıklama bulunmuyor.";
+        document.getElementById("mTrailerBtn").onclick = () => {
+            window.open(`https://youtube.com{encodeURIComponent(name + " Türkçe fragman")}`, "_blank");
+        };
         document.getElementById("detailModal").style.display = "flex";
     }
 
-    function closeModal() {
-        document.getElementById("detailModal").style.display = "none";
+    function closeModal() { document.getElementById("detailModal").style.display = "none"; }
+
+    function toggleWatchlistByKey(key) {
+        const item = itemsMap[key];
+        if (!item) return;
+        const idx = watchlist.findIndex(w => w.id === item.id);
+        if (idx >= 0) watchlist.splice(idx, 1);
+        else watchlist.unshift(item);
+        localStorage.setItem("catflix_list", JSON.stringify(watchlist));
+        alert(idx >= 0 ? "Listenden çıkarıldı." : "✅ İzleme Listene eklendi!");
     }
 
-    loadPopular();
+    function watchHeroTrailer() {
+        const cur = heroItems.at(heroIndex);
+        if (!cur) return;
+        const name = cur.title || cur.name;
+        window.open(`https://youtube.com{encodeURIComponent(name + " Türkçe fragman")}`, "_blank");
+    }
+
+    function addHeroToList() {
+        const cur = heroItems.at(heroIndex);
+        if (!cur) return;
+        const key = `${cur.media_type || "movie"}_${cur.id}`;
+        itemsMap[key] = cur;
+        toggleWatchlistByKey(key);
+    }
+
+    function openHeroDetails() {
+        const cur = heroItems.at(heroIndex);
+        if (!cur) return;
+        const key = `${cur.media_type || "movie"}_${cur.id}`;
+        itemsMap[key] = cur;
+        openDetailByKey(key);
+    }
+
+    loadHome();
 </script>
 </body>
 </html>
