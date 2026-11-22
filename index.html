@@ -484,13 +484,15 @@
         body.innerHTML = '<div style="padding:30px;color:#a3a3a3;">Detaylar getiriliyor...</div>';
         modal.style.display = "flex";
 
-        const res = await Promise.all([
+                const res = await Promise.all([
             tmdb("/" + type + "/" + id),
             tmdb("/" + type + "/" + id + "/credits"),
             tmdb("/" + type + "/" + id + "/videos"),
-            tmdb("/" + type + "/" + id + "/similar")
+            tmdb("/" + type + "/" + id + "/similar"),
+            fetchSmart("https://" + "api.themoviedb.org" + "/3/" + type + "/" + id + "/videos?api_key=" + STATE.apiKey, true)
         ]);
-        const info = res.at(0), cred = res.at(1), vid = res.at(2), sim = res.at(3);
+        const info = res.at(0), cred = res.at(1), vid = res.at(2), sim = res.at(3), vidGlobal = res.at(4);
+
         if (!info) { body.innerHTML = '<div style="padding:24px;">İçerik bilgileri yüklenemedi.</div>'; return; }
 
         const title = info.title || info.name || "CATFLIX";
@@ -501,8 +503,10 @@
         const poster = imgUrl(info.poster_path, "w500");
         const directors = ((cred && cred.crew) || []).filter(function(c) { return c.job === "Director"; }).map(function(c) { return c.name; }).join(", ") || "Belirtilmemiş";
         const cast = ((cred && cred.cast) || []).slice(0, 10);
-        const trailers = ((vid && vid.results) || []).filter(function(v) { return v.site === "YouTube"; });
+      const allVids = ((vid && vid.results) || []).concat((vidGlobal && vidGlobal.results) || []);
+        const trailers = allVids.filter(function(v) { return v.site === "YouTube"; });
         const trailerKey = trailers.length ? trailers.at(0).key : "";
+
 
         const itemObj = { id: info.id, type: type, title: title, poster_path: info.poster_path, release_date: info.release_date || info.first_air_date, vote_average: info.vote_average, genre_ids: (info.genres || []).map(function(g) { return g.id; }) };
         STATE.history = [itemObj].concat(STATE.history.filter(function(h) { return !(h.id === info.id && h.type === type); })).slice(0, 30);
@@ -556,18 +560,18 @@
                 '<div style="font-size:11px;color:#a3a3a3;">' + (ep.overview || "") + '</div></div>';
         }).join("");
     }
-           function playTrailerInline(ytKey, title) {
+                  function playTrailerInline(ytKey, title) {
         const area = document.getElementById("inlineMediaArea");
         if (!area) return;
         const ytDomain = ["www", "youtube", "com"].join(".");
-        if (ytKey) {
-            const ytSrc = "https://" + ytDomain + "/embed/" + ytKey + "?autoplay=1";
-            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="360" src="' + ytSrc + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
-        } else {
-            const searchUrl = "https://" + ytDomain + "/results?search_query=" + encodeURIComponent(title + " Türkçe fragman");
-            window.open(searchUrl, "_blank");
-        }
+        const ytParams = "autoplay=1&hl=tr&cc_lang_pref=tr&cc_load_policy=1";
+        const ytSrc = ytKey
+            ? "https://" + ytDomain + "/embed/" + ytKey + "?" + ytParams
+            : "https://" + ytDomain + "/embed?listType=search&list=" + encodeURIComponent(title + " Türkçe fragman") + "&" + ytParams;
+        area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="360" src="' + ytSrc + '" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
     }
+
+
 
 
 
