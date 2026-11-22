@@ -1,4 +1,4 @@
-name: CATFLIX TMDB Gercek Afisler
+name: CATFLIX Gercek Afisler
 on:
   push:
     branches: [ "main" ]
@@ -12,55 +12,55 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           mkdir -p posters
-          cat << 'EOF' > tmdb_sync.py
-          import urllib.request, json
+          curl -sSL "https://yts.mx" -o m1.json
+          curl -sSL "https://yts.mx" -o m2.json
+          curl -sSL "https://jikan.moe" -o anime.json
+          cat << 'EOF' > make_cat.py
+          import json, subprocess
 
-          API_KEY = "4ef0be86342c15f9d510aef2774dfe78"
-          HDR = {"User-Agent": "Mozilla/5.0"}
+          def load_j(fn):
+              try: return json.load(open(fn, encoding="utf-8"))
+              except: return {}
 
-          def get_tmdb(path):
-              sep = "&" if "?" in path else "?"
-              url = "https://themoviedb.org" + path + sep + "api_key=" + API_KEY + "&language=tr-TR"
-              req = urllib.request.Request(url, headers=HDR)
-              return json.loads(urllib.request.urlopen(req, timeout=20).read().decode()).get("results", [])[:12]
+          def dl(url, name):
+              if not url: return ""
+              subprocess.run(["curl", "-sSL", url, "-o", "posters/" + name])
+              return "./posters/" + name
 
-          def save_img(tmdb_path, local_name):
-              if not tmdb_path:
-                  return ""
-              img_url = "https://tmdb.org" + tmdb_path
-              req = urllib.request.Request(img_url, headers=HDR)
-              open("posters/" + local_name, "wb").write(urllib.request.urlopen(req, timeout=20).read())
-              return local_name
-
-          cats = {
-              "trending": get_tmdb("/trending/all/week"),
-              "movies": get_tmdb("/movie/popular"),
-              "tv": get_tmdb("/tv/popular"),
-              "anime": get_tmdb("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc")
-          }
+          m1 = ((load_j("m1.json").get("data") or {}).get("movies")) or []
+          m2 = ((load_j("m2.json").get("data") or {}).get("movies")) or []
+          animes = (load_j("anime.json").get("data")) or []
 
           out = {"trending": [], "movies": [], "tv": [], "anime": []}
-          counter = 1
-          for cname, items in cats.items():
-              for it in items:
-                  p_file = save_img(it.get("poster_path"), f"tmdb_{counter}.jpg")
-                  b_file = save_img(it.get("backdrop_path"), f"tmdb_bg_{counter}.jpg")
-                  if p_file:
-                      out[cname].append({
-                          "id": counter,
-                          "title": it.get("title") or it.get("name") or "",
-                          "vote_average": round(float(it.get("vote_average") or 8.0), 1),
-                          "overview": it.get("overview") or "Türkçe özet bilgisi.",
-                          "img": "./posters/" + p_file,
-                          "bg": "./posters/" + (b_file or p_file)
-                      })
-                      counter += 1
+          idx = 1
+
+          for m in m1[:10]:
+              img = dl(m.get("medium_cover_image") or m.get("large_cover_image"), f"real_{idx}.jpg")
+              bg = dl(m.get("background_image_original") or m.get("large_cover_image"), f"real_bg_{idx}.jpg")
+              out["trending"].append({"id": idx, "title": m.get("title", ""), "vote_average": m.get("rating", 8.2), "overview": m.get("summary") or "Popüler sinema filmi.", "img": img, "bg": bg or img})
+              idx += 1
+
+          for m in m2[:12]:
+              img = dl(m.get("medium_cover_image") or m.get("large_cover_image"), f"real_{idx}.jpg")
+              out["movies"].append({"id": idx, "title": m.get("title", ""), "vote_average": m.get("rating", 8.5), "overview": m.get("summary") or "Yüksek puanlı film.", "img": img, "bg": img})
+              idx += 1
+
+          for m in m1[10:20]:
+              img = dl(m.get("medium_cover_image") or m.get("large_cover_image"), f"real_{idx}.jpg")
+              out["tv"].append({"id": idx, "title": m.get("title", ""), "vote_average": m.get("rating", 8.1), "overview": m.get("summary") or "Öne çıkan yapım.", "img": img, "bg": img})
+              idx += 1
+
+          for a in animes[:12]:
+              u = ((a.get("images") or {}).get("jpg") or {}).get("large_image_url") or ""
+              img = dl(u, f"real_{idx}.jpg")
+              out["anime"].append({"id": idx, "title": a.get("title_english") or a.get("title", ""), "vote_average": a.get("score") or 8.6, "overview": a.get("synopsis") or "Popüler anime.", "img": img, "bg": img})
+              idx += 1
 
           open("catalog.json", "w", encoding="utf-8").write(json.dumps(out, ensure_ascii=False))
           EOF
-          python3 tmdb_sync.py
+          python3 make_cat.py
           git config user.name "Bot"
           git config user.email "bot@catflix.local"
           git add posters catalog.json
-          git commit -m "tmdb_gercek_afisler" || exit 0
+          git commit -m "gercek_afis_paketi" || exit 0
           git push
