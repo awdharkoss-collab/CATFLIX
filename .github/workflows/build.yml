@@ -1,9 +1,7 @@
 name: CATFLIX Android APK Olustur
 on:
-  workflow_dispatch:
   push:
-    paths:
-           - '.github/workflows/build.yml'
+  workflow_dispatch:
 jobs:
   apk:
     runs-on: ubuntu-latest
