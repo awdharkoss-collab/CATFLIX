@@ -13,30 +13,58 @@ jobs:
       - run: |
           mkdir -p posters
           python3 -c '
-          import urllib.request, json
-          KEY = "4ef0be86342c15f9d510aef2774dfe78"
+          import urllib.request, json, re
           HDR = {"User-Agent": "Mozilla/5.0"}
-          def get(ep):
-              sep = "&" if "?" in ep else "?"
-              req = urllib.request.Request("https://themoviedb.org" + ep + sep + "api_key=" + KEY + "&language=tr-TR", headers=HDR)
-              return json.loads(urllib.request.urlopen(req).read().decode()).get("results", [])[:12]
+          def fetch_json(url):
+              req = urllib.request.Request(url, headers=HDR)
+              return json.loads(urllib.request.urlopen(req, timeout=15).read().decode())
+
+          shows = fetch_json("https://tvmaze.com")[:30]
+          animes = fetch_json("https://jikan.moe").get("data", [])
+
+          def map_show(s, idx):
+              img_url = (s.get("image") or {}).get("original") or (s.get("image") or {}).get("medium") or ""
+              fn = f"show_{s.get(\"id\", idx)}.jpg"
+              if img_url:
+                  try:
+                      r = urllib.request.Request(img_url, headers=HDR)
+                      open("posters/" + fn, "wb").write(urllib.request.urlopen(r, timeout=15).read())
+                  except: fn = ""
+              return {
+                  "id": s.get("id", idx),
+                  "title": s.get("name", ""),
+                  "vote_average": (s.get("rating") or {}).get("average") or 8.4,
+                  "overview": re.sub(r"<[^>]*>", "", s.get("summary") or "Popüler yapım."),
+                  "poster_path": "/" + fn if fn else "",
+                  "backdrop_path": "/" + fn if fn else ""
+              }
+
+          def map_anime(a, idx):
+              img_url = ((a.get("images") or {}).get("jpg") or {}).get("large_image_url") or ""
+              fn = f"anime_{a.get(\"mal_id\", idx)}.jpg"
+              if img_url:
+                  try:
+                      r = urllib.request.Request(img_url, headers=HDR)
+                      open("posters/" + fn, "wb").write(urllib.request.urlopen(r, timeout=15).read())
+                  except: fn = ""
+              return {
+                  "id": a.get("mal_id", idx),
+                  "title": a.get("title_english") or a.get("title", ""),
+                  "vote_average": a.get("score") or 8.6,
+                  "overview": a.get("synopsis") or "Popüler anime yapımı.",
+                  "poster_path": "/" + fn if fn else "",
+                  "backdrop_path": "/" + fn if fn else ""
+              }
+
+          mapped_shows = [map_show(s, i) for i, s in enumerate(shows)]
+          mapped_animes = [map_anime(a, i) for i, a in enumerate(animes)]
+
           data = {
-              "trending": get("/trending/all/week"),
-              "movies": get("/movie/popular"),
-              "tv": get("/tv/popular"),
-              "anime": get("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc")
+              "trending": mapped_shows[:10],
+              "movies": mapped_shows[10:20],
+              "tv": mapped_shows[20:30],
+              "anime": mapped_animes
           }
-          for k, lst in data.items():
-              for it in lst:
-                  for f in ["poster_path", "backdrop_path"]:
-                      p = it.get(f)
-                      if p:
-                          fn = p.lstrip("/")
-                          try:
-                              r = urllib.request.Request("https://tmdb.org" + fn, headers=HDR)
-                              open("posters/" + fn, "wb").write(urllib.request.urlopen(r).read())
-                          except Exception as e:
-                              print("skip", fn, e)
           open("catalog.json", "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False))
           '
           git config user.name "Bot"
