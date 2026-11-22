@@ -1,162 +1,74 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CATFLIX</title>
-    <style>
-        :root { --bg: #08080c; --panel: #12121a; --red: #e50914; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background: var(--bg); color: #fff; padding-bottom: 40px; }
-        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: rgba(8,8,12,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); gap: 10px; }
-        .nav-left { display: flex; align-items: center; gap: 16px; overflow-x: auto; }
-        .logo { font-size: 24px; font-weight: 900; color: var(--red); cursor: pointer; letter-spacing: 1.5px; }
-        .nav-link { color: #cbd5e1; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-        .nav-link.active { color: #fff; border-bottom: 2px solid var(--red); }
-        input { background: #1c1c26; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 16px; width: 135px; outline: none; }
-        .hero { position: relative; min-height: 360px; padding: 110px 24px 36px; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; }
-        .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(8,8,12,0.94) 28%, rgba(8,8,12,0.2) 85%), linear-gradient(to top, var(--bg) 8%, transparent 65%); }
-        .hero-content { position: relative; z-index: 10; max-width: 560px; }
-        .hero-title { font-size: 36px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
-        .hero-desc { font-size: 13px; color: #cbd5e1; margin-bottom: 16px; line-height: 1.5; }
-        .btn-red { background: var(--red); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; margin-right: 8px; }
-        .btn-glass { background: rgba(255,255,255,0.18); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; cursor: pointer; }
-        .section { padding: 16px 20px 6px; }
-        .sec-title { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
-        .row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
-        .poster-card { position: relative; flex: 0 0 150px; border-radius: 10px; overflow: hidden; background: var(--panel); border: 1px solid rgba(255,255,255,0.14); cursor: pointer; transition: 0.2s; }
-        .poster-card:hover { transform: scale(1.04); border-color: var(--red); }
-        .poster-card img { width: 100%; height: 220px; object-fit: cover; display: block; background: #1e293b; }
-        .rating-pill { position: absolute; top: 8px; left: 8px; z-index: 2; background: rgba(0,0,0,0.85); color: #4ade80; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 6px; }
-        .poster-info { padding: 8px; }
-        .poster-name { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 60; align-items: center; justify-content: center; padding: 16px; }
-        .modal-box { background: var(--panel); border: 1px solid var(--red); border-radius: 14px; max-width: 460px; width: 100%; padding: 20px; }
-    </style>
-</head>
-<body>
-<nav>
-    <div class="nav-left">
-        <div class="logo" onclick="loadHome()">CATFLIX</div>
-        <span class="nav-link active" onclick="switchCat(this, 'home')">Ana Sayfa</span>
-        <span class="nav-link" onclick="switchCat(this, 'movie')">Filmler</span>
-        <span class="nav-link" onclick="switchCat(this, 'tv')">Diziler</span>
-        <span class="nav-link" onclick="switchCat(this, 'anime')">Anime</span>
-        <span class="nav-link" onclick="switchCat(this, 'watchlist')">Listem</span>
-    </div>
-    <input type="text" id="searchInput" placeholder="Film, dizi ara..." oninput="searchCatalog(this.value)">
-</nav>
+name: CATFLIX Gercek Afisler
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  posters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p posters
+          python3 -c '
+          import urllib.request, json, re
+          HDR = {"User-Agent": "Mozilla/5.0"}
+          def fetch_json(url):
+              req = urllib.request.Request(url, headers=HDR)
+              return json.loads(urllib.request.urlopen(req, timeout=15).read().decode())
 
-<div class="hero" id="heroBanner">
-    <div class="hero-content">
-        <h1 class="hero-title" id="heroTitle">CATFLIX</h1>
-        <p class="hero-desc" id="heroDesc"></p>
-        <button type="button" class="btn-red" onclick="watchHeroTrailer()">▶ Fragman</button>
-        <button type="button" class="btn-glass" onclick="openHeroDetails()">ⓘ Detay</button>
-    </div>
-</div>
+          shows = fetch_json("https://tvmaze.com")[:30]
+          animes = fetch_json("https://jikan.moe").get("data", [])
 
-<div id="catalogContainer"></div>
+          def map_show(s, idx):
+              img_url = (s.get("image") or {}).get("original") or (s.get("image") or {}).get("medium") or ""
+              fn = f"show_{s.get(\"id\", idx)}.jpg"
+              if img_url:
+                  try:
+                      r = urllib.request.Request(img_url, headers=HDR)
+                      open("posters/" + fn, "wb").write(urllib.request.urlopen(r, timeout=15).read())
+                  except: fn = ""
+              return {
+                  "id": s.get("id", idx),
+                  "title": s.get("name", ""),
+                  "vote_average": (s.get("rating") or {}).get("average") or 8.4,
+                  "overview": re.sub(r"<[^>]*>", "", s.get("summary") or "Popüler yapım."),
+                  "poster_path": "/" + fn if fn else "",
+                  "backdrop_path": "/" + fn if fn else ""
+              }
 
-<div class="modal" id="detailModal" onclick="if(event.target===this) closeModal()">
-    <div class="modal-box">
-        <h2 id="mTitle" style="margin-bottom:6px;"></h2>
-        <div id="mMeta" style="font-size:12px; color:#4ade80; margin-bottom:10px;"></div>
-        <p id="mOverview" style="font-size:13px; color:#cbd5e1; line-height:1.5; max-height:180px; overflow-y:auto; margin-bottom:14px;"></p>
-        <button type="button" class="btn-red" id="mTrailerBtn">▶ YouTube Fragman</button>
-        <button type="button" class="btn-glass" id="mFavBtn">+ Listeye Ekle</button>
-        <button type="button" class="btn-glass" onclick="closeModal()">Kapat</button>
-    </div>
-</div>
+          def map_anime(a, idx):
+              img_url = ((a.get("images") or {}).get("jpg") or {}).get("large_image_url") or ""
+              fn = f"anime_{a.get(\"mal_id\", idx)}.jpg"
+              if img_url:
+                  try:
+                      r = urllib.request.Request(img_url, headers=HDR)
+                      open("posters/" + fn, "wb").write(urllib.request.urlopen(r, timeout=15).read())
+                  except: fn = ""
+              return {
+                  "id": a.get("mal_id", idx),
+                  "title": a.get("title_english") or a.get("title", ""),
+                  "vote_average": a.get("score") or 8.6,
+                  "overview": a.get("synopsis") or "Popüler anime yapımı.",
+                  "poster_path": "/" + fn if fn else "",
+                  "backdrop_path": "/" + fn if fn else ""
+              }
 
-<script>
-    let DATA = {
-        trending: [
-            { id: 157336, title: "Yıldızlararası", vote_average: 8.7, overview: "İnsanlığın geleceğini kurtarmak için solucan deliğinden geçerek yeni yaşanabilir gezegenler arayan astronotların destansı yolculuğu.", poster_path: "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", backdrop_path: "/xJHokMbljvjADYdit5fK5VQsXEG.jpg" }
-        ],
-        movies: [], tv: [], anime: []
-    };
-    let heroItem = null, itemsMap = {}, watchlist = JSON.parse(localStorage.getItem("catflix_list") || "[]");
+          mapped_shows = [map_show(s, i) for i, s in enumerate(shows)]
+          mapped_animes = [map_anime(a, i) for i, a in enumerate(animes)]
 
-    function setHero(item) {
-        if (!item) return;
-        heroItem = item;
-        const p = (item.backdrop_path || item.poster_path || "").replace(/^\//, "");
-        if (p) document.getElementById("heroBanner").style.backgroundImage = "url('./posters/" + p + "')";
-        document.getElementById("heroTitle").innerText = item.title || item.name || "CATFLIX";
-        document.getElementById("heroDesc").innerText = item.overview || "";
-    }
-
-    function buildRow(title, items) {
-        if (!items || !items.length) return "";
-        let html = "";
-        for (let i = 0; i < items.length; i++) {
-            const it = items.at(i);
-            const key = (it.title ? "m_" : "t_") + it.id;
-            itemsMap[key] = it;
-            const name = it.title || it.name || "";
-            const score = it.vote_average ? Number(it.vote_average).toFixed(1) : "8.5";
-            const p = (it.poster_path || "").replace(/^\//, "");
-            html += '<div class="poster-card" onclick="openDetail(\'' + key + '\')">' +
-                '<span class="rating-pill">★ ' + score + '</span>' +
-                '<img src="./posters/' + p + '" alt="' + name.replace(/"/g, "") + '">' +
-                '<div class="poster-info"><div class="poster-name">' + name + '</div></div></div>';
-        }
-        return '<div class="section"><div class="sec-title">' + title + '</div><div class="row">' + html + '</div></div>';
-    }
-    async function loadHome() {
-        try {
-            const res = await fetch("./catalog.json?v=" + Date.now());
-            if (res.ok) DATA = await res.json();
-        } catch (e) {}
-        setHero((DATA.trending || []).at(0));
-        document.getElementById("catalogContainer").innerHTML =
-            buildRow("🔥 Haftanın Trendleri", DATA.trending) +
-            buildRow("🎬 Popüler Filmler", DATA.movies) +
-            buildRow("📺 Popüler Diziler", DATA.tv) +
-            buildRow("⛩️ Popüler Animeler", DATA.anime);
-    }
-
-    function switchCat(el, cat) {
-        document.querySelectorAll(".nav-link").forEach(function(n) { n.classList.remove("active"); });
-        el.classList.add("active");
-        const c = document.getElementById("catalogContainer");
-        if (cat === "home") { loadHome(); return; }
-        if (cat === "watchlist") { c.innerHTML = watchlist.length ? buildRow("❤️ İzleme Listem", watchlist) : '<div class="section">Listeniz henüz boş.</div>'; return; }
-        if (cat === "movie") { setHero((DATA.movies || []).at(0)); c.innerHTML = buildRow("🎬 Popüler Filmler", DATA.movies); }
-        if (cat === "tv") { setHero((DATA.tv || []).at(0)); c.innerHTML = buildRow("📺 Popüler Diziler", DATA.tv); }
-        if (cat === "anime") { setHero((DATA.anime || []).at(0)); c.innerHTML = buildRow("⛩️ Trend Animeler", DATA.anime); }
-    }
-
-    function searchCatalog(q) {
-        const t = q.trim().toLowerCase();
-        if (!t) { loadHome(); return; }
-        const found = Object.values(itemsMap).filter(function(i) { return (i.title || i.name || "").toLowerCase().indexOf(t) !== -1; });
-        document.getElementById("catalogContainer").innerHTML = buildRow('🔍 "' + q + '" Sonuçları', found);
-    }
-
-    function openDetail(key) {
-        const it = itemsMap[key];
-        if (!it) return;
-        const name = it.title || it.name || "";
-        document.getElementById("mTitle").innerText = name;
-        document.getElementById("mMeta").innerText = "★ " + (it.vote_average ? Number(it.vote_average).toFixed(1) : "8.5");
-        document.getElementById("mOverview").innerText = it.overview || "Türkçe açıklama.";
-        document.getElementById("mTrailerBtn").onclick = function() { window.open("https://youtube.com" + encodeURIComponent(name + " Türkçe fragman"), "_blank"); };
-        document.getElementById("mFavBtn").onclick = function() {
-            const idx = watchlist.findIndex(function(w) { return w.id === it.id; });
-            if (idx >= 0) watchlist.splice(idx, 1); else watchlist.unshift(it);
-            localStorage.setItem("catflix_list", JSON.stringify(watchlist));
-            alert(idx >= 0 ? "Listeden çıkarıldı." : "✅ Listeye eklendi!");
-        };
-        document.getElementById("detailModal").style.display = "flex";
-    }
-
-    function closeModal() { document.getElementById("detailModal").style.display = "none"; }
-    function watchHeroTrailer() { if (heroItem) window.open("https://youtube.com" + encodeURIComponent((heroItem.title || heroItem.name) + " Türkçe fragman"), "_blank"); }
-    function openHeroDetails() { if (heroItem) { const k = (heroItem.title ? "m_" : "t_") + heroItem.id; itemsMap[k] = heroItem; openDetail(k); } }
-
-    loadHome();
-</script>
-</body>
-</html>
+          data = {
+              "trending": mapped_shows[:10],
+              "movies": mapped_shows[10:20],
+              "tv": mapped_shows[20:30],
+              "anime": mapped_animes
+          }
+          open("catalog.json", "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False))
+          '
+          git config user.name "Bot"
+          git config user.email "bot@catflix.local"
+          git add posters catalog.json
+          git commit -m "afisler" || exit 0
+          git push
