@@ -645,15 +645,14 @@
             (progList.length ? progList.map(function(p) { return '<div style="font-size:12px;padding:6px 0;border-bottom:1px solid #262626;cursor:pointer;" onclick="openDetail(\'tv\',' + p.tvId + ')">▶ Sezon ' + p.sNum + ' Bölüm ' + p.eNum + ' - ' + p.epName + '</div>'; }).join("") : '<p style="font-size:13px;color:#a3a3a3;">Henüz kayıtlı bölüm ilerlemesi yok.</p>') +
             '</div></div>' + rowSection("Son Görüntülenenler", STATE.history) + '</div></div>';
     }
-    const FREE_MOVIES = [
-        { title: "Arzu Film • Kemal Sunal & Yeşilçam Tam Filmler", cat: "Resmi Yapımcı Listesi", listId: "PL00D67996F4B883C0" },
-        { title: "Erler Film • Klasik Türk Sineması Tek Parça", cat: "Resmi Yapımcı Listesi", listId: "PL30989D72652E372D" },
-        { title: "Fanatik Film Yerli • Tam Uzunluk Türk Filmleri", cat: "Resmi Yapımcı Listesi", listId: "PL85199043E8E27285" },
-        { title: "Gülşah Film • Tek Parça Türk Filmleri", cat: "Resmi Yapımcı Listesi", listId: "PL2D71321E797A3D82" },
+        const FREE_MOVIES = [
         { title: "Big Buck Bunny (Full HD Animasyon Filmi)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/BigBuckBunny.mp4" },
-        { title: "Sintel (Fantastik Kısa Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/Sintel.mp4" },
-        { title: "Tears of Steel (Bilim Kurgu Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/TearsOfSteel.mp4" }
+        { title: "Sintel (Fantastik Sinema Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/Sintel.mp4" },
+        { title: "Tears of Steel (Bilim Kurgu Filmi • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/TearsOfSteel.mp4" },
+        { title: "Elephants Dream (Bilim Kurgu • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/ElephantsDream.mp4" },
+        { title: "For Bigger Blazes (Aksiyon • HD)", cat: "Doğrudan MP4 Sinema", mp4: "https://" + "://googleapis.com" + "/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" }
     ];
+
 
     function renderFreeCinemaPage(view) {
         view.innerHTML = '<div class="page-wrap"><div class="section"><div class="sec-title">🎬 Sinema Salonu • Uygulama İçi Tam Uzunluk Filmler</div>' +
@@ -766,8 +765,8 @@
     function toggleFs(id) { const v = document.getElementById(id); if (v && v.requestFullscreen) v.requestFullscreen().catch(function() {}); }
     function closeModal() { document.getElementById("appModal").style.display = "none"; document.getElementById("modalBody").innerHTML = ""; }
 
-    const hlsScript = document.createElement("script");
-    hlsScript.src = "https://" + "cdnjs." + "://cloudflare.com";
+        const hlsScript = document.createElement("script");
+    hlsScript.src = "https://" + ["cdn", "jsdelivr", "net"].join(".") + "/npm/hls.js@1.5.15/dist/hls.min.js";
     hlsScript.onload = async function() { await loadGenres(); await goPage("home"); };
     hlsScript.onerror = async function() { await loadGenres(); await goPage("home"); };
     document.head.appendChild(hlsScript);
