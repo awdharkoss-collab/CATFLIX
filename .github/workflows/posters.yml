@@ -1,4 +1,4 @@
-name: CATFLIX Gercek Afisler
+name: CATFLIX TMDB Gercek Afisler
 on:
   push:
     branches: [ "main" ]
@@ -11,49 +11,56 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          pip install -q pillow
           mkdir -p posters
-          cat << 'EOF' > gen_posters.py
-          from PIL import Image, ImageDraw
-          import random
+          cat << 'EOF' > tmdb_sync.py
+          import urllib.request, json
 
-          items = [
-              ("1.jpg", "YILDIZLARARASI", "BILIM KURGU", (12, 32, 56), (44, 83, 100), (56, 189, 248)),
-              ("2.jpg", "DUNE: BOLUM 2", "EPIK MACERA", (75, 38, 18), (168, 85, 32), (251, 191, 36)),
-              ("3.jpg", "BASLANGIC", "AKSIYON / GERILIM", (17, 24, 39), (30, 58, 138), (96, 165, 250)),
-              ("4.jpg", "KARA SOVALYE", "SUC / AKSIYON", (10, 14, 24), (31, 41, 55), (234, 179, 8)),
-              ("5.jpg", "BREAKING BAD", "SUC / DRAM DIZISI", (8, 48, 34), (22, 101, 52), (74, 222, 128)),
-              ("6.jpg", "GAME OF THRONES", "FANTASTIK DIZI", (24, 24, 27), (63, 63, 70), (229, 9, 20)),
-              ("7.jpg", "STRANGER THINGS", "GIZEM / BILIM KURGU", (38, 12, 36), (112, 26, 80), (244, 63, 94)),
-              ("8.jpg", "ATTACK ON TITAN", "AKSIYON ANIME", (52, 24, 20), (127, 29, 29), (248, 113, 113)),
-              ("9.jpg", "DEMON SLAYER", "FANTASTIK ANIME", (10, 46, 42), (17, 94, 89), (45, 212, 191)),
-              ("10.jpg", "JUJUTSU KAISEN", "DOGAUSTU ANIME", (24, 14, 58), (76, 29, 149), (167, 139, 250))
-          ]
+          API_KEY = "4ef0be86342c15f9d510aef2774dfe78"
+          HDR = {"User-Agent": "Mozilla/5.0"}
 
-          for fn, title, tag, c1, c2, acc in items:
-              W, H = 500, 740
-              img = Image.new("RGB", (W, H))
-              draw = ImageDraw.Draw(img)
-              for y in range(H):
-                  t = y / H
-                  r = int(c1[0] * (1 - t) + c2[0] * t)
-                  g = int(c1[1] * (1 - t) + c2[1] * t)
-                  b = int(c1[2] * (1 - t) + c2[2] * t)
-                  draw.line([(0, y), (W, y)], fill=(r, g, b))
-              random.seed(fn)
-              for _ in range(45):
-                  sx, sy = random.randint(20, W - 20), random.randint(20, int(H * 0.6))
-                  draw.ellipse([sx, sy, sx + 3, sy + 3], fill=(255, 255, 255))
-              draw.ellipse([110, 130, 390, 410], outline=acc, width=6)
-              draw.ellipse([155, 175, 345, 365], fill=acc)
-              draw.rectangle([25, H - 170, W - 25, H - 30], fill=(10, 10, 16), outline=acc, width=3)
-              draw.text((45, H - 145), tag, fill=acc)
-              draw.text((45, H - 105), title, fill=(255, 255, 255))
-              img.save("posters/" + fn, "JPEG", quality=90)
+          def get_tmdb(path):
+              sep = "&" if "?" in path else "?"
+              url = "https://themoviedb.org" + path + sep + "api_key=" + API_KEY + "&language=tr-TR"
+              req = urllib.request.Request(url, headers=HDR)
+              return json.loads(urllib.request.urlopen(req, timeout=20).read().decode()).get("results", [])[:12]
+
+          def save_img(tmdb_path, local_name):
+              if not tmdb_path:
+                  return ""
+              img_url = "https://tmdb.org" + tmdb_path
+              req = urllib.request.Request(img_url, headers=HDR)
+              open("posters/" + local_name, "wb").write(urllib.request.urlopen(req, timeout=20).read())
+              return local_name
+
+          cats = {
+              "trending": get_tmdb("/trending/all/week"),
+              "movies": get_tmdb("/movie/popular"),
+              "tv": get_tmdb("/tv/popular"),
+              "anime": get_tmdb("/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc")
+          }
+
+          out = {"trending": [], "movies": [], "tv": [], "anime": []}
+          counter = 1
+          for cname, items in cats.items():
+              for it in items:
+                  p_file = save_img(it.get("poster_path"), f"tmdb_{counter}.jpg")
+                  b_file = save_img(it.get("backdrop_path"), f"tmdb_bg_{counter}.jpg")
+                  if p_file:
+                      out[cname].append({
+                          "id": counter,
+                          "title": it.get("title") or it.get("name") or "",
+                          "vote_average": round(float(it.get("vote_average") or 8.0), 1),
+                          "overview": it.get("overview") or "Türkçe özet bilgisi.",
+                          "img": "./posters/" + p_file,
+                          "bg": "./posters/" + (b_file or p_file)
+                      })
+                      counter += 1
+
+          open("catalog.json", "w", encoding="utf-8").write(json.dumps(out, ensure_ascii=False))
           EOF
-          python3 gen_posters.py
+          python3 tmdb_sync.py
           git config user.name "Bot"
           git config user.email "bot@catflix.local"
-          git add posters
-          git commit -m "afis_jpg" || exit 0
+          git add posters catalog.json
+          git commit -m "tmdb_gercek_afisler" || exit 0
           git push
