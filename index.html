@@ -8,17 +8,17 @@
         :root { --bg: #080808; --panel: #151515; --panel2: #1f1f1f; --red: #F00016; --text: #FFFFFF; --muted: #a3a3a3; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: var(--bg); color: var(--text); overflow-x: hidden; padding-bottom: 60px; }
-        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(8,8,8,0.96); border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px; }
+        nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(8,8,8,0.97); border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px; }
         .nav-left { display: flex; align-items: center; gap: 16px; overflow-x: auto; scrollbar-width: none; }
         .nav-left::-webkit-scrollbar { display: none; }
-        .logo { font-size: 26px; font-weight: 900; color: var(--red); letter-spacing: 2px; text-shadow: 0 0 14px rgba(240,0,22,0.8); cursor: pointer; }
+        .logo { font-size: 26px; font-weight: 900; color: var(--red); letter-spacing: 2px; text-shadow: 0 0 14px rgba(240,0,22,0.85); cursor: pointer; }
         .nav-item { font-size: 13px; font-weight: 700; color: #d4d4d4; cursor: pointer; white-space: nowrap; padding: 5px 2px; border-bottom: 2px solid transparent; }
         .nav-item:hover, .nav-item.active { color: #fff; border-bottom-color: var(--red); }
         .live-dot { display: inline-block; width: 7px; height: 7px; background: var(--red); border-radius: 50%; margin-right: 4px; box-shadow: 0 0 8px var(--red); }
         .nav-right { display: flex; align-items: center; gap: 8px; position: relative; }
-        .search-box input { background: var(--panel); border: 1px solid #333; color: #fff; padding: 7px 14px; border-radius: 20px; width: 170px; font-size: 13px; outline: none; }
+        .search-box input { background: var(--panel); border: 1px solid #333; color: #fff; padding: 7px 14px; border-radius: 20px; width: 175px; font-size: 13px; outline: none; }
         .search-box input:focus { border-color: var(--red); width: 220px; }
-        .suggest-box { display: none; position: absolute; top: 38px; right: 0; width: 300px; max-height: 340px; overflow-y: auto; background: var(--panel); border: 1px solid #333; border-radius: 10px; z-index: 120; }
+        .suggest-box { display: none; position: absolute; top: 38px; right: 0; width: 310px; max-height: 350px; overflow-y: auto; background: var(--panel); border: 1px solid #333; border-radius: 10px; z-index: 120; }
         .suggest-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; font-size: 13px; }
         .suggest-item:hover { background: var(--panel2); }
         .suggest-item img { width: 34px; height: 48px; object-fit: cover; border-radius: 4px; background: #222; }
@@ -53,7 +53,7 @@
         .card-sub { font-size: 11px; color: var(--muted); }
         .tv-layout { display: grid; grid-template-columns: 200px 280px 1fr; gap: 12px; padding: 14px 20px; min-height: calc(100vh - 85px); }
         .tv-box { background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-        .tv-cat { padding: 10px 14px; font-size: 13px; font-weight: 700; color: #d4d4d4; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
+        .tv-cat { padding: 10px 14px; font-size: 13px; font-weight: 700; color: #d4d4d4; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .tv-cat:hover, .tv-cat.active { background: rgba(240,0,22,0.18); color: #fff; border-left: 3px solid var(--red); }
         .tv-scroll { overflow-y: auto; max-height: 74vh; }
         .ch-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; }
@@ -143,12 +143,7 @@
         favChannels: JSON.parse(localStorage.getItem("catflix_fav_ch") || "[]"),
         history: JSON.parse(localStorage.getItem("catflix_history") || "[]"),
         progress: JSON.parse(localStorage.getItem("catflix_progress") || "{}"),
-        genres: {},
-        cache: {},
-        hls: null,
-        activeTvCat: "Tüm Kanallar",
-        activeChannel: null,
-        heroItem: null
+        genres: {}, cache: {}, hls: null, activeTvCat: "Tüm Kanallar", activeChannel: null, heroItem: null
     };
 
     function saveState() {
@@ -171,23 +166,20 @@
         el.style.display = "block";
     }
 
-    function imgUrl(path, size = "w500") {
+    function imgUrl(path, size) {
+        size = size || "w500";
         if (!path) return "";
-        if (path.startsWith("http")) return path;
+        if (path.indexOf("http") === 0) return path;
         return "https://wsrv.nl" + size + path;
     }
 
-    async function fetchSmart(url, isJson = true) {
-        const proxies = [
-            url,
-            "https://codetabs.com" + encodeURIComponent(url),
-            "https://allorigins.win" + encodeURIComponent(url)
-        ];
-        for (const u of proxies) {
+    async function fetchSmart(url, isJson) {
+        const proxies = [url, "https://codetabs.com" + encodeURIComponent(url), "https://allorigins.win" + encodeURIComponent(url)];
+        for (let i = 0; i < proxies.length; i++) {
             const ctrl = new AbortController();
-            const timer = setTimeout(() => ctrl.abort(), 5000);
+            const timer = setTimeout(function() { ctrl.abort(); }, 5000);
             try {
-                const res = await fetch(u, { signal: ctrl.signal });
+                const res = await fetch(proxies.at(i), { signal: ctrl.signal });
                 clearTimeout(timer);
                 if (res.ok) {
                     const txt = await res.text();
@@ -202,36 +194,33 @@
 
     async function tmdb(path) {
         if (STATE.cache[path]) return STATE.cache[path];
-        const sep = path.includes("?") ? "&" : "?";
-        const url = `https://themoviedb.org{path}${sep}api_key=${STATE.apiKey}&language=${STATE.lang}`;
+        const sep = path.indexOf("?") !== -1 ? "&" : "?";
+        const url = "https://themoviedb.org" + path + sep + "api_key=" + STATE.apiKey + "&language=" + STATE.lang;
         const data = await fetchSmart(url, true);
-        if (!data) {
-            showErr("TMDB API bağlantısı kurulamadı veya API anahtarı geçersiz. Ayarlar bölümünden kontrol edin.");
-            return null;
-        }
+        if (!data) { showErr("TMDB API bağlantısı kurulamadı. Ayarlar bölümünden API anahtarınızı kontrol edin."); return null; }
         showErr("");
         STATE.cache[path] = data;
         return data;
     }
 
     async function loadGenres() {
-        const [mg, tg] = await Promise.all([tmdb("/genre/movie/list"), tmdb("/genre/tv/list")]);
-        if (mg && mg.genres) mg.genres.forEach(g => STATE.genres[g.id] = g.name);
-        if (tg && tg.genres) tg.genres.forEach(g => STATE.genres[g.id] = g.name);
+        const res = await Promise.all([tmdb("/genre/movie/list"), tmdb("/genre/tv/list")]);
+        if (res.at(0) && res.at(0).genres) res.at(0).genres.forEach(function(g) { STATE.genres[g.id] = g.name; });
+        if (res.at(1) && res.at(1).genres) res.at(1).genres.forEach(function(g) { STATE.genres[g.id] = g.name; });
     }
 
     function genreNames(ids) {
-        return (ids || []).map(id => STATE.genres[id]).filter(Boolean).slice(0, 3).join(" • ") || "Sinema & Dizi";
+        return (ids || []).map(function(id) { return STATE.genres[id]; }).filter(Boolean).slice(0, 3).join(" • ") || "Sinema & Dizi";
     }
     async function goPage(page, el) {
-        document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+        document.querySelectorAll(".nav-item").forEach(function(n) { n.classList.remove("active"); });
         if (el) el.classList.add("active");
         else {
-            const target = document.querySelector(`.nav-item[data-page="${page}"]`);
+            const target = document.querySelector('.nav-item[data-page="' + page + '"]');
             if (target) target.classList.add("active");
         }
         const view = document.getElementById("mainView");
-        view.innerHTML = `<div class="page-wrap" style="padding:110px 28px;color:#a3a3a3;">İçerikler yükleniyor...</div>`;
+        view.innerHTML = '<div class="page-wrap" style="padding:110px 28px;color:#a3a3a3;">İçerikler yükleniyor...</div>';
 
         if (page === "home") await renderHome(view);
         else if (page === "movies") await renderMoviesPage(view);
@@ -252,56 +241,46 @@
         const year = (item.release_date || item.first_air_date || "").slice(0, 4);
         const score = Number(item.vote_average || 0).toFixed(1);
         const poster = imgUrl(item.poster_path, "w500");
-        return `<div class="card" onclick="openDetail('${type}',${item.id})">
-            <span class="pill-tl">★ ${score}</span>
-            ${year ? `<span class="pill-tr">${year}</span>` : ""}
-            <div class="card-poster">
-                ${poster ? `<img src="${poster}" loading="lazy" onerror="this.remove()">` : ""}
-                <div class="card-fallback-title">${title}</div>
-            </div>
-            <div class="card-info">
-                <div class="card-title">${title}</div>
-                <div class="card-sub">${genreNames(item.genre_ids)}</div>
-            </div>
-        </div>`;
+        return '<div class="card" onclick="openDetail(\'' + type + '\',' + item.id + ')">' +
+            '<span class="pill-tl">★ ' + score + '</span>' +
+            (year ? '<span class="pill-tr">' + year + '</span>' : '') +
+            '<div class="card-poster">' +
+            (poster ? '<img src="' + poster + '" loading="lazy" onerror="this.remove()">' : '') +
+            '<div class="card-fallback">' + title + '</div></div>' +
+            '<div class="card-info"><div class="card-title">' + title + '</div>' +
+            '<div class="card-sub">' + genreNames(item.genre_ids) + '</div></div></div>';
     }
 
     function rowSection(title, items, forcedType) {
         if (!items || !items.length) return "";
-        return `<div class="section">
-            <div class="sec-head"><div class="sec-title">${title}</div></div>
-            <div class="row">${items.map(i => cardHtml(i, forcedType)).join("")}</div>
-        </div>`;
+        return '<div class="section"><div class="sec-title">' + title + '</div>' +
+            '<div class="row">' + items.map(function(i) { return cardHtml(i, forcedType); }).join("") + '</div></div>';
     }
 
     function heroHtml(item, type) {
         if (!item) return "";
-        STATE.heroItem = { item, type };
+        STATE.heroItem = { item: item, type: type };
         const title = item.title || item.name || "CATFLIX";
         const year = (item.release_date || item.first_air_date || "").slice(0, 4);
         const score = Number(item.vote_average || 8.5).toFixed(1);
         const bg = imgUrl(item.backdrop_path || item.poster_path, "w1280");
-        return `<div class="hero" style="${bg ? `background-image:url('${bg}')` : ""}">
-            <div class="hero-body">
-                <div class="hero-badges">
-                    <span class="badge-score">★ ${score}</span>
-                    ${year ? `<span class="badge-tag">${year}</span>` : ""}
-                    <span class="badge-tag">${genreNames(item.genre_ids)}</span>
-                </div>
-                <h1 class="hero-title">${title}</h1>
-                <p class="hero-desc">${item.overview || "Sinema, Dizi ve Canlı TV Tek Platformda."}</p>
-                <div class="hero-actions">
-                    <button class="btn-neon" onclick="openDetail('${type}',${item.id})">▶ Şimdi İzle</button>
-                    <button class="btn-dark" onclick="openTrailer('${type}',${item.id},'${title.replace(/'/g, "")}')">🎬 Fragmanı İzle</button>
-                    <button class="btn-dark" onclick="toggleList('watchlist',${item.id},'${type}')">+ Listeme Ekle</button>
-                    <button class="btn-dark" onclick="openDetail('${type}',${item.id})">ⓘ Detaylar</button>
-                </div>
-            </div>
-        </div>`;
+        return '<div class="hero" style="' + (bg ? "background-image:url('" + bg + "')" : "") + '">' +
+            '<div class="hero-body"><div class="hero-badges">' +
+            '<span class="badge-score">★ ' + score + '</span>' +
+            (year ? '<span class="badge-tag">' + year + '</span>' : '') +
+            '<span class="badge-tag">' + genreNames(item.genre_ids) + '</span></div>' +
+            '<h1 class="hero-title">' + title + '</h1>' +
+            '<p class="hero-desc">' + (item.overview || "Sinema, Dizi ve Canlı TV Tek Platformda.") + '</p>' +
+            '<div class="hero-actions">' +
+            '<button class="btn-neon" onclick="openDetail(\'' + type + '\',' + item.id + ')">▶ Şimdi İzle</button>' +
+            '<button class="btn-dark" onclick="openTrailer(\'' + type + '\',' + item.id + ',\'' + title.replace(/'/g, "") + '\')">🎬 Fragmanı İzle</button>' +
+            '<button class="btn-dark" onclick="toggleList(\'watchlist\',' + item.id + ',\'' + type + '\')">+ Listeme Ekle</button>' +
+            '<button class="btn-dark" onclick="openDetail(\'' + type + '\',' + item.id + ')">ⓘ Detaylar</button>' +
+            '</div></div></div>';
     }
 
     async function renderHome(view) {
-        const [tr, trM, trT, popM, popT, topM, nowM, upM, act, adv, sci, com, hor, dra, thr, ani, trMov, trTv] = await Promise.all([
+        const res = await Promise.all([
             tmdb("/trending/all/week"), tmdb("/trending/movie/week"), tmdb("/trending/tv/week"),
             tmdb("/movie/popular"), tmdb("/tv/popular"), tmdb("/movie/top_rated"),
             tmdb("/movie/now_playing"), tmdb("/movie/upcoming"),
@@ -312,184 +291,155 @@
             tmdb("/discover/movie?with_original_language=tr&sort_by=popularity.desc"),
             tmdb("/discover/tv?with_original_language=tr&sort_by=popularity.desc")
         ]);
-        const heroItem = (tr && tr.results && tr.results) || (popM && popM.results && popM.results);
+        const heroItem = (res.at(0) && res.at(0).results && res.at(0).results.at(0)) || (res.at(3) && res.at(3).results && res.at(3).results.at(0));
         const hType = heroItem && heroItem.title ? "movie" : "tv";
         view.innerHTML = heroHtml(heroItem, hType) +
-            rowSection("Haftanın Trendleri", tr?.results) +
-            rowSection("Trend Filmler", trM?.results, "movie") +
-            rowSection("Trend Diziler", trT?.results, "tv") +
-            rowSection("Popüler Filmler", popM?.results, "movie") +
-            rowSection("Popüler Diziler", popT?.results, "tv") +
-            rowSection("En Çok İzlenenler", topM?.results, "movie") +
-            rowSection("Yeni Eklenen Filmler", nowM?.results, "movie") +
-            rowSection("Yakında Gelecekler", upM?.results, "movie") +
-            rowSection("Aksiyon", act?.results, "movie") +
-            rowSection("Macera", adv?.results, "movie") +
-            rowSection("Bilim Kurgu", sci?.results, "movie") +
-            rowSection("Komedi", com?.results, "movie") +
-            rowSection("Korku", hor?.results, "movie") +
-            rowSection("Dram", dra?.results, "movie") +
-            rowSection("Gerilim", thr?.results, "movie") +
-            rowSection("Animasyon", ani?.results, "movie") +
-            rowSection("Türk Filmleri", trMov?.results, "movie") +
-            rowSection("Türk Dizileri", trTv?.results, "tv");
+            rowSection("Haftanın Trendleri", res.at(0) && res.at(0).results) +
+            rowSection("Trend Filmler", res.at(1) && res.at(1).results, "movie") +
+            rowSection("Trend Diziler", res.at(2) && res.at(2).results, "tv") +
+            rowSection("Popüler Filmler", res.at(3) && res.at(3).results, "movie") +
+            rowSection("Popüler Diziler", res.at(4) && res.at(4).results, "tv") +
+            rowSection("En Çok İzlenenler", res.at(5) && res.at(5).results, "movie") +
+            rowSection("Yeni Eklenen Filmler", res.at(6) && res.at(6).results, "movie") +
+            rowSection("Yakında Gelecekler", res.at(7) && res.at(7).results, "movie") +
+            rowSection("Aksiyon", res.at(8) && res.at(8).results, "movie") +
+            rowSection("Macera", res.at(9) && res.at(9).results, "movie") +
+            rowSection("Bilim Kurgu", res.at(10) && res.at(10).results, "movie") +
+            rowSection("Komedi", res.at(11) && res.at(11).results, "movie") +
+            rowSection("Korku", res.at(12) && res.at(12).results, "movie") +
+            rowSection("Dram", res.at(13) && res.at(13).results, "movie") +
+            rowSection("Gerilim", res.at(14) && res.at(14).results, "movie") +
+            rowSection("Animasyon", res.at(15) && res.at(15).results, "movie") +
+            rowSection("Türk Filmleri", res.at(16) && res.at(16).results, "movie") +
+            rowSection("Türk Dizileri", res.at(17) && res.at(17).results, "tv");
     }
     async function renderMoviesPage(view) {
-        const [pop, top, now, up] = await Promise.all([
-            tmdb("/movie/popular"), tmdb("/movie/top_rated"), tmdb("/movie/now_playing"), tmdb("/movie/upcoming")
-        ]);
-        view.innerHTML = `<div class="page-wrap">` +
-            rowSection("Popüler Filmler", pop?.results, "movie") +
-            rowSection("En Yüksek Puanlı Filmler", top?.results, "movie") +
-            rowSection("Vizyondaki Filmler", now?.results, "movie") +
-            rowSection("Yakında Gelecek Filmler", up?.results, "movie") + `</div>`;
+        const res = await Promise.all([tmdb("/movie/popular"), tmdb("/movie/top_rated"), tmdb("/movie/now_playing"), tmdb("/movie/upcoming")]);
+        view.innerHTML = '<div class="page-wrap">' +
+            rowSection("Popüler Filmler", res.at(0) && res.at(0).results, "movie") +
+            rowSection("En Yüksek Puanlı Filmler", res.at(1) && res.at(1).results, "movie") +
+            rowSection("Vizyondaki Filmler", res.at(2) && res.at(2).results, "movie") +
+            rowSection("Yakında Gelecek Filmler", res.at(3) && res.at(3).results, "movie") + '</div>';
     }
 
     async function renderTvSeriesPage(view) {
-        const [pop, top, air, on] = await Promise.all([
-            tmdb("/tv/popular"), tmdb("/tv/top_rated"), tmdb("/tv/airing_today"), tmdb("/tv/on_the_air")
-        ]);
-        view.innerHTML = `<div class="page-wrap">` +
-            rowSection("Popüler Diziler", pop?.results, "tv") +
-            rowSection("En Yüksek Puanlı Diziler", top?.results, "tv") +
-            rowSection("Bugün Yayınlanan Bölümler", air?.results, "tv") +
-            rowSection("Yayındaki Diziler", on?.results, "tv") + `</div>`;
+        const res = await Promise.all([tmdb("/tv/popular"), tmdb("/tv/top_rated"), tmdb("/tv/airing_today"), tmdb("/tv/on_the_air")]);
+        view.innerHTML = '<div class="page-wrap">' +
+            rowSection("Popüler Diziler", res.at(0) && res.at(0).results, "tv") +
+            rowSection("En Yüksek Puanlı Diziler", res.at(1) && res.at(1).results, "tv") +
+            rowSection("Bugün Yayınlanan Bölümler", res.at(2) && res.at(2).results, "tv") +
+            rowSection("Yayındaki Diziler", res.at(3) && res.at(3).results, "tv") + '</div>';
     }
 
     async function renderDubbedPage(view) {
-        const [trDubM, trDubT, subM, subT] = await Promise.all([
+        const res = await Promise.all([
             tmdb("/discover/movie?with_original_language=tr&sort_by=popularity.desc"),
             tmdb("/discover/tv?with_original_language=tr&sort_by=popularity.desc"),
             tmdb("/discover/movie?without_original_language=tr&sort_by=popularity.desc"),
             tmdb("/discover/tv?without_original_language=tr&sort_by=popularity.desc")
         ]);
-        view.innerHTML = `<div class="page-wrap">
-            <div class="section"><p style="color:#a3a3a3;font-size:13px;">ℹ️ TMDB dil kayıtlarına göre orijinal dili Türkçe olan yapımlar ve Türkçe altyazı destekli uluslararası yapımlar listelenmektedir.</p></div>` +
-            rowSection("Türkçe Seslendirmeli Filmler", trDubM?.results, "movie") +
-            rowSection("Türkçe Seslendirmeli Diziler", trDubT?.results, "tv") +
-            rowSection("Türkçe Altyazılı Filmler", subM?.results, "movie") +
-            rowSection("Türkçe Altyazılı Diziler", subT?.results, "tv") + `</div>`;
+        view.innerHTML = '<div class="page-wrap">' +
+            '<div class="section"><p style="color:#a3a3a3;font-size:13px;">ℹ️ TMDB dil kayıtlarına göre Türkçe yapımlar ve Türkçe altyazı destekli uluslararası yapımlar listelenmektedir.</p></div>' +
+            rowSection("Türkçe Seslendirmeli Filmler", res.at(0) && res.at(0).results, "movie") +
+            rowSection("Türkçe Seslendirmeli Diziler", res.at(1) && res.at(1).results, "tv") +
+            rowSection("Türkçe Altyazılı Filmler", res.at(2) && res.at(2).results, "movie") +
+            rowSection("Türkçe Altyazılı Diziler", res.at(3) && res.at(3).results, "tv") + '</div>';
     }
 
     async function renderImaxPage(view) {
-        const [imaxM, imaxSci] = await Promise.all([
+        const res = await Promise.all([
             tmdb("/discover/movie?with_genres=28,12&sort_by=revenue.desc"),
             tmdb("/discover/movie?with_genres=878&sort_by=vote_count.desc")
         ]);
-        view.innerHTML = `<div class="page-wrap">` +
-            rowSection("IMAX Gişe Rekortmeni Filmler", imaxM?.results, "movie") +
-            rowSection("IMAX Bilim Kurgu & Görsel Şölen", imaxSci?.results, "movie") + `</div>`;
+        view.innerHTML = '<div class="page-wrap">' +
+            rowSection("IMAX Gişe Rekortmeni Filmler", res.at(0) && res.at(0).results, "movie") +
+            rowSection("IMAX Bilim Kurgu & Görsel Şölen", res.at(1) && res.at(1).results, "movie") + '</div>';
     }
 
     async function renderForYouPage(view) {
         const base = STATE.history.at(0) || STATE.favorites.at(0);
         let recHtml = "";
         if (base && base.id && base.type) {
-            const sim = await tmdb(`/${base.type}/${base.id}/recommendations`);
+            const sim = await tmdb("/" + base.type + "/" + base.id + "/recommendations");
             if (sim && sim.results && sim.results.length) {
-                recHtml = rowSection(`"${base.title}" İzlediğiniz İçin Önerilenler`, sim.results, base.type);
+                recHtml = rowSection('"' + base.title + '" İzlediğiniz İçin Önerilenler', sim.results, base.type);
             }
         }
         const trend = await tmdb("/trending/all/day");
-        view.innerHTML = `<div class="page-wrap">` + recHtml + rowSection("Bugün Senin İçin Seçtiklerimiz", trend?.results) + `</div>`;
+        view.innerHTML = '<div class="page-wrap">' + recHtml + rowSection("Bugün Senin İçin Seçtiklerimiz", trend && trend.results) + '</div>';
     }
 
     function renderSavedPage(view, heading, list) {
         if (!list.length) {
-            view.innerHTML = `<div class="page-wrap"><div class="section"><div class="sec-title">${heading}</div><p style="color:#a3a3a3;">Henüz içerik eklenmemiş.</p></div></div>`;
+            view.innerHTML = '<div class="page-wrap"><div class="section"><div class="sec-title">' + heading + '</div><p style="color:#a3a3a3;">Henüz içerik eklenmemiş.</p></div></div>';
             return;
         }
-        view.innerHTML = `<div class="page-wrap"><div class="section"><div class="sec-title">${heading} (${list.length})</div>
-            <div class="grid-cards">${list.map(i => cardHtml(i, i.type)).join("")}</div></div></div>`;
+        view.innerHTML = '<div class="page-wrap"><div class="section"><div class="sec-title">' + heading + ' (' + list.length + ')</div>' +
+            '<div class="grid-cards">' + list.map(function(i) { return cardHtml(i, i.type); }).join("") + '</div></div></div>';
     }
     const TV_CATS = ["Tüm Kanallar", "Türkiye", "Haber", "Spor", "Sinema", "Belgesel", "Çocuk", "Müzik", "Uluslararası", "Favorilerim"];
 
     function renderLiveTvPage(view) {
-        view.innerHTML = `<div class="page-wrap">
-            <div class="tv-layout">
-                <div class="tv-box">
-                    <div style="padding:12px 14px;font-weight:900;border-bottom:1px solid #262626;color:var(--red);">📺 KATEGORİLER</div>
-                    <div class="tv-scroll" id="tvCatList"></div>
-                </div>
-                <div class="tv-box">
-                    <div style="padding:10px;border-bottom:1px solid #262626;">
-                        <input type="text" class="field" style="margin:0;" placeholder="Kanal ara..." oninput="filterTvChannels(this.value)">
-                    </div>
-                    <div class="tv-scroll" id="tvChannelList"></div>
-                </div>
-                <div class="tv-box">
-                    <div style="padding:12px 16px;background:#101010;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #262626;">
-                        <div>
-                            <div id="liveChName" style="font-weight:900;font-size:15px;">Kanal Seçin</div>
-                            <div id="liveChEpg" style="font-size:12px;color:#4ade80;">Yayın akışı bekleniyor...</div>
-                        </div>
-                        <button class="icon-btn" id="liveFavBtn" onclick="toggleFavChannel()">🤍 Favori</button>
-                    </div>
-                    <div style="background:#000;position:relative;">
-                        <video id="liveVideo" controls playsinline style="max-height:56vh;"></video>
-                    </div>
-                    <div class="player-bar" id="liveControls">
-                        <button class="p-ctrl" onclick="ctrlPlay('liveVideo')">▶ Oynat</button>
-                        <button class="p-ctrl" onclick="ctrlPause('liveVideo')">⏸ Duraklat</button>
-                        <button class="p-ctrl" onclick="ctrlMute('liveVideo')">🔇 Ses</button>
-                        <select class="p-ctrl" id="liveQualitySel" onchange="setHlsQuality(this.value)"><option value="-1">Kalite: Otomatik</option></select>
-                        <select class="p-ctrl" id="liveAudioSel" onchange="setHlsAudio(this.value)"><option value="-1">Ses Parçası</option></select>
-                        <select class="p-ctrl" onchange="setSpeed('liveVideo',this.value)">
-                            <option value="1">Hız: 1x</option><option value="1.25">1.25x</option><option value="1.5">1.5x</option><option value="0.75">0.75x</option>
-                        </select>
-                        <button class="p-ctrl" onclick="togglePip('liveVideo')">🗔 PiP</button>
-                        <button class="p-ctrl" onclick="toggleFs('liveVideo')">⛶ Tam Ekran</button>
-                    </div>
-                    <div id="liveErrBox" style="padding:10px 14px;color:#f87171;font-size:12px;display:none;"></div>
-                </div>
-            </div>
-        </div>`;
+        view.innerHTML = '<div class="page-wrap"><div class="tv-layout">' +
+            '<div class="tv-box"><div style="padding:12px 14px;font-weight:900;border-bottom:1px solid #262626;color:var(--red);">📺 KATEGORİLER</div><div class="tv-scroll" id="tvCatList"></div></div>' +
+            '<div class="tv-box"><div style="padding:10px;border-bottom:1px solid #262626;"><input type="text" class="field" style="margin:0;" placeholder="Kanal ara..." oninput="filterTvChannels(this.value)"></div><div class="tv-scroll" id="tvChannelList"></div></div>' +
+            '<div class="tv-box"><div style="padding:12px 16px;background:#101010;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #262626;">' +
+            '<div><div id="liveChName" style="font-weight:900;font-size:15px;">Kanal Seçin</div><div id="liveChEpg" style="font-size:12px;color:#4ade80;">Yayın akışı bekleniyor...</div></div>' +
+            '<button class="icon-btn" id="liveFavBtn" onclick="toggleFavChannel()">🤍 Favori</button></div>' +
+            '<div style="background:#000;"><video id="liveVideo" controls playsinline style="max-height:56vh;"></video></div>' +
+            '<div class="player-bar"><button class="p-ctrl" onclick="ctrlPlay(\'liveVideo\')">▶ Oynat</button><button class="p-ctrl" onclick="ctrlPause(\'liveVideo\')">⏸ Duraklat</button><button class="p-ctrl" onclick="ctrlMute(\'liveVideo\')">🔇 Ses</button>' +
+            '<select class="p-ctrl" id="liveQualitySel" onchange="setHlsQuality(this.value)"><option value="-1">Kalite: Otomatik</option></select>' +
+            '<select class="p-ctrl" id="liveAudioSel" onchange="setHlsAudio(this.value)"><option value="-1">Ses Parçası</option></select>' +
+            '<select class="p-ctrl" onchange="setSpeed(\'liveVideo\',this.value)"><option value="1">Hız: 1x</option><option value="1.25">1.25x</option><option value="1.5">1.5x</option><option value="0.75">0.75x</option></select>' +
+            '<button class="p-ctrl" onclick="togglePip(\'liveVideo\')">🗔 PiP</button><button class="p-ctrl" onclick="toggleFs(\'liveVideo\')">⛶ Tam Ekran</button></div>' +
+            '<div id="liveErrBox" style="padding:10px 14px;color:#f87171;font-size:12px;display:none;"></div></div></div></div>';
         drawTvCats();
         drawTvChannels(STATE.channels);
-        if (STATE.channels.length) selectChannel(STATE.channels.at(0));
+        if (STATE.channels.length) selectChannel(0);
     }
 
     function drawTvCats() {
         const el = document.getElementById("tvCatList");
         if (!el) return;
-        el.innerHTML = TV_CATS.map(c => `<div class="tv-cat ${STATE.activeTvCat === c ? "active" : ""}" onclick="pickTvCat('${c}')">${c}</div>`).join("");
+        el.innerHTML = TV_CATS.map(function(c) {
+            return '<div class="tv-cat ' + (STATE.activeTvCat === c ? "active" : "") + '" onclick="pickTvCat(\'' + c + '\')">' + c + '</div>';
+        }).join("");
     }
 
     function pickTvCat(cat) {
         STATE.activeTvCat = cat;
         drawTvCats();
         if (cat === "Tüm Kanallar") drawTvChannels(STATE.channels);
-        else if (cat === "Favorilerim") drawTvChannels(STATE.channels.filter(c => STATE.favChannels.includes(c.url)));
-        else drawTvChannels(STATE.channels.filter(c => (c.group || "").toLowerCase().includes(cat.toLowerCase())));
+        else if (cat === "Favorilerim") drawTvChannels(STATE.channels.filter(function(c) { return STATE.favChannels.indexOf(c.url) !== -1; }));
+        else drawTvChannels(STATE.channels.filter(function(c) { return (c.group || "").toLowerCase().indexOf(cat.toLowerCase()) !== -1; }));
     }
 
     function filterTvChannels(q) {
         const t = q.trim().toLowerCase();
-        drawTvChannels(t ? STATE.channels.filter(c => c.name.toLowerCase().includes(t)) : STATE.channels);
+        drawTvChannels(t ? STATE.channels.filter(function(c) { return c.name.toLowerCase().indexOf(t) !== -1; }) : STATE.channels);
     }
 
     function drawTvChannels(list) {
         const el = document.getElementById("tvChannelList");
         if (!el) return;
-        if (!list.length) { el.innerHTML = `<div style="padding:14px;color:#a3a3a3;font-size:13px;">Kanal bulunamadı.</div>`; return; }
-        el.innerHTML = list.map((c, idx) => {
+        if (!list.length) { el.innerHTML = '<div style="padding:14px;color:#a3a3a3;font-size:13px;">Kanal bulunamadı.</div>'; return; }
+        el.innerHTML = list.map(function(c) {
+            const globalIdx = STATE.channels.indexOf(c);
             const epg = STATE.epgMap[c.tvgId] || STATE.epgMap[c.name] || "Canlı Yayın Akışı";
             const active = STATE.activeChannel && STATE.activeChannel.url === c.url ? "active" : "";
-            return `<div class="ch-row ${active}" onclick='selectChannel(${JSON.stringify(c).replace(/'/g, "&#39;")})'>
-                <img class="ch-logo" src="${c.logo || ""}" onerror="this.style.visibility='hidden'">
-                <div class="ch-meta">
-                    <div class="ch-name">${c.name}</div>
-                    <div class="ch-epg">${epg}</div>
-                </div>
-            </div>`;
+            return '<div class="ch-row ' + active + '" onclick="selectChannel(' + globalIdx + ')">' +
+                '<img class="ch-logo" src="' + (c.logo || "") + '" onerror="this.style.visibility=\'hidden\'">' +
+                '<div style="flex:1;min-width:0;"><div class="ch-name">' + c.name + '</div><div class="ch-epg">' + epg + '</div></div></div>';
         }).join("");
     }
 
-    function selectChannel(ch) {
+    function selectChannel(idx) {
+        const ch = STATE.channels.at(idx);
+        if (!ch) return;
         STATE.activeChannel = ch;
         document.getElementById("liveChName").innerText = ch.name;
         document.getElementById("liveChEpg").innerText = STATE.epgMap[ch.tvgId] || STATE.epgMap[ch.name] || "Canlı Yayın";
-        document.getElementById("liveFavBtn").innerText = STATE.favChannels.includes(ch.url) ? "❤️ Favoride" : "🤍 Favori";
+        document.getElementById("liveFavBtn").innerText = STATE.favChannels.indexOf(ch.url) !== -1 ? "❤️ Favoride" : "🤍 Favori";
         const errBox = document.getElementById("liveErrBox");
         errBox.style.display = "none";
 
@@ -501,20 +451,18 @@
             STATE.hls = hls;
             hls.loadSource(ch.url);
             hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-                const qSel = document.getElementById("liveQualitySel");
-                qSel.innerHTML = `<option value="-1">Kalite: Otomatik</option>` + (data.levels || []).map((l, i) => `<option value="${i}">${l.height}p</option>`).join("");
-                const aSel = document.getElementById("liveAudioSel");
-                aSel.innerHTML = `<option value="-1">Ses Parçası</option>` + (hls.audioTracks || []).map((a, i) => `<option value="${i}">${a.name || "Ses " + (i + 1)}</option>`).join("");
-                video.play().catch(() => {});
+            hls.on(Hls.Events.MANIFEST_PARSED, function(_, data) {
+                document.getElementById("liveQualitySel").innerHTML = '<option value="-1">Kalite: Otomatik</option>' + (data.levels || []).map(function(l, i) { return '<option value="' + i + '">' + l.height + 'p</option>'; }).join("");
+                document.getElementById("liveAudioSel").innerHTML = '<option value="-1">Ses Parçası</option>' + (hls.audioTracks || []).map(function(a, i) { return '<option value="' + i + '">' + (a.name || "Ses " + (i + 1)) + '</option>'; }).join("");
+                video.play().catch(function() {});
             });
-            hls.on(Hls.Events.ERROR, (_, d) => {
-                if (d.fatal) { errBox.innerText = "⚠️ Yayın akışı açılamadı veya tarayıcı tarafından desteklenmiyor."; errBox.style.display = "block"; }
+            hls.on(Hls.Events.ERROR, function(_, d) {
+                if (d.fatal) { errBox.innerText = "⚠️ Yayın akışı açılamadı veya desteklenmiyor."; errBox.style.display = "block"; }
             });
         } else {
             video.src = ch.url;
-            video.onerror = () => { errBox.innerText = "⚠️ Desteklenmeyen yayın formatı veya erişim engeli."; errBox.style.display = "block"; };
-            video.play().catch(() => {});
+            video.onerror = function() { errBox.innerText = "⚠️ Desteklenmeyen yayın formatı veya erişim engeli."; errBox.style.display = "block"; };
+            video.play().catch(function() {});
         }
         drawTvChannels(STATE.channels);
     }
@@ -525,22 +473,23 @@
         const i = STATE.favChannels.indexOf(u);
         if (i >= 0) STATE.favChannels.splice(i, 1); else STATE.favChannels.push(u);
         saveState();
-        document.getElementById("liveFavBtn").innerText = STATE.favChannels.includes(u) ? "❤️ Favoride" : "🤍 Favori";
+        document.getElementById("liveFavBtn").innerText = STATE.favChannels.indexOf(u) !== -1 ? "❤️ Favoride" : "🤍 Favori";
     }
     async function openDetail(type, id) {
         const modal = document.getElementById("appModal");
         const body = document.getElementById("modalBody");
         document.getElementById("modalTopTitle").innerText = "Yükleniyor...";
-        body.innerHTML = `<div style="padding:30px;color:#a3a3a3;">Detaylar getiriliyor...</div>`;
+        body.innerHTML = '<div style="padding:30px;color:#a3a3a3;">Detaylar getiriliyor...</div>';
         modal.style.display = "flex";
 
-        const [info, cred, vid, sim] = await Promise.all([
-            tmdb(`/${type}/${id}`),
-            tmdb(`/${type}/${id}/credits`),
-            tmdb(`/${type}/${id}/videos`),
-            tmdb(`/${type}/${id}/similar`)
+        const res = await Promise.all([
+            tmdb("/" + type + "/" + id),
+            tmdb("/" + type + "/" + id + "/credits"),
+            tmdb("/" + type + "/" + id + "/videos"),
+            tmdb("/" + type + "/" + id + "/similar")
         ]);
-        if (!info) { body.innerHTML = `<div style="padding:24px;">İçerik bilgileri yüklenemedi.</div>`; return; }
+        const info = res.at(0), cred = res.at(1), vid = res.at(2), sim = res.at(3);
+        if (!info) { body.innerHTML = '<div style="padding:24px;">İçerik bilgileri yüklenemedi.</div>'; return; }
 
         const title = info.title || info.name || "CATFLIX";
         document.getElementById("modalTopTitle").innerText = title;
@@ -548,61 +497,46 @@
         const score = Number(info.vote_average || 8.0).toFixed(1);
         const bg = imgUrl(info.backdrop_path, "w1280");
         const poster = imgUrl(info.poster_path, "w500");
-        const directors = ((cred && cred.crew) || []).filter(c => c.job === "Director").map(c => c.name).join(", ") || "Belirtilmemiş";
+        const directors = ((cred && cred.crew) || []).filter(function(c) { return c.job === "Director"; }).map(function(c) { return c.name; }).join(", ") || "Belirtilmemiş";
         const cast = ((cred && cred.cast) || []).slice(0, 10);
-        const trailers = ((vid && vid.results) || []).filter(v => v.site === "YouTube");
-        const trailerKey = trailers.length ? trailers.key : "";
+        const trailers = ((vid && vid.results) || []).filter(function(v) { return v.site === "YouTube"; });
+        const trailerKey = trailers.length ? trailers.at(0).key : "";
 
-        const itemObj = { id: info.id, type, title, poster_path: info.poster_path, release_date: info.release_date || info.first_air_date, vote_average: info.vote_average, genre_ids: (info.genres || []).map(g => g.id) };
-        STATE.history = [itemObj, ...STATE.history.filter(h => !(h.id === info.id && h.type === type))].slice(0, 30);
+        const itemObj = { id: info.id, type: type, title: title, poster_path: info.poster_path, release_date: info.release_date || info.first_air_date, vote_average: info.vote_average, genre_ids: (info.genres || []).map(function(g) { return g.id; }) };
+        STATE.history = [itemObj].concat(STATE.history.filter(function(h) { return !(h.id === info.id && h.type === type); })).slice(0, 30);
         saveState();
 
         let seasonsHtml = "";
         if (type === "tv" && info.seasons && info.seasons.length) {
-            const validSeasons = info.seasons.filter(s => s.season_number > 0);
-            seasonsHtml = `<div style="margin-top:16px;">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <strong style="color:var(--red);">Sezon & Bölümler:</strong>
-                    <select class="field" style="width:auto;margin:0;" onchange="loadSeasonEpisodes(${id},this.value)">
-                        ${validSeasons.map(s => `<option value="${s.season_number}">Sezon ${s.season_number} (${s.episode_count} Bölüm)</option>`).join("")}
-                    </select>
-                </div>
-                <div id="seasonEpisodesBox" class="ep-grid"></div>
-            </div>`;
+            const validSeasons = info.seasons.filter(function(s) { return s.season_number > 0; });
+            seasonsHtml = '<div style="margin-top:16px;"><div style="display:flex;align-items:center;gap:10px;"><strong style="color:var(--red);">Sezon & Bölümler:</strong>' +
+                '<select class="field" style="width:auto;margin:0;" onchange="loadSeasonEpisodes(' + id + ',this.value)">' +
+                validSeasons.map(function(s) { return '<option value="' + s.season_number + '">Sezon ' + s.season_number + ' (' + s.episode_count + ' Bölüm)</option>'; }).join("") +
+                '</select></div><div id="seasonEpisodesBox" class="ep-grid"></div></div>';
         }
 
-        body.innerHTML = `<div class="detail-hero" style="${bg ? `background-image:url('${bg}')` : ""}">
-            <div class="detail-content">
-                ${poster ? `<img class="detail-poster" src="${poster}" onerror="this.remove()">` : ""}
-                <div style="flex:1;min-width:240px;">
-                    <div class="hero-badges">
-                        <span class="badge-score">★ ${score}</span>
-                        ${year ? `<span class="badge-tag">${year}</span>` : ""}
-                        <span class="badge-tag">${(info.genres || []).map(g => g.name).join(" • ")}</span>
-                    </div>
-                    <h2 style="font-size:26px;margin-bottom:8px;">${title}</h2>
-                    <p style="font-size:13px;color:#d4d4d4;line-height:1.5;margin-bottom:10px;">${info.overview || "Açıklama bulunmuyor."}</p>
-                    <div style="font-size:12px;color:#a3a3a3;margin-bottom:14px;"><strong>Yönetmen:</strong> ${directors}</div>
-                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                        <button class="btn-neon" onclick="playTrailerInline('${trailerKey}','${title.replace(/'/g, "")}')">▶ Fragman / Oynat</button>
-                        <button class="btn-dark" onclick='toggleSavedItem("watchlist",${JSON.stringify(itemObj).replace(/'/g, "&#39;")})'>+ İzleme Listesi</button>
-                        <button class="btn-dark" onclick='toggleSavedItem("favorites",${JSON.stringify(itemObj).replace(/'/g, "&#39;")})'>❤️ Favori</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div style="padding:18px 22px;">
-            <div id="inlineMediaArea"></div>
-            ${cast.length ? `<strong style="font-size:14px;">Oyuncular</strong><div class="cast-row">
-                ${cast.map(c => `<div class="cast-card"><img src="${imgUrl(c.profile_path, "w185")}" onerror="this.style.visibility='hidden'"><div><strong>${c.name}</strong></div><div style="color:#a3a3a3;">${c.character || ""}</div></div>`).join("")}
-            </div>` : ""}
-            ${seasonsHtml}
-            ${sim && sim.results && sim.results.length ? `<div style="margin-top:16px;"><strong style="font-size:14px;">Benzer İçerikler</strong>
-                <div class="row" style="margin-top:8px;">${sim.results.slice(0, 10).map(s => cardHtml(s, type)).join("")}</div></div>` : ""}
-        </div>`;
+        body.innerHTML = '<div class="detail-hero" style="' + (bg ? "background-image:url('" + bg + "')" : "") + '">' +
+            '<div class="detail-content">' + (poster ? '<img class="detail-poster" src="' + poster + '" onerror="this.remove()">' : '') +
+            '<div style="flex:1;min-width:240px;"><div class="hero-badges"><span class="badge-score">★ ' + score + '</span>' +
+            (year ? '<span class="badge-tag">' + year + '</span>' : '') +
+            '<span class="badge-tag">' + (info.genres || []).map(function(g) { return g.name; }).join(" • ") + '</span></div>' +
+            '<h2 style="font-size:26px;margin-bottom:8px;">' + title + '</h2>' +
+            '<p style="font-size:13px;color:#d4d4d4;line-height:1.5;margin-bottom:10px;">' + (info.overview || "Açıklama bulunmuyor.") + '</p>' +
+            '<div style="font-size:12px;color:#a3a3a3;margin-bottom:14px;"><strong>Yönetmen:</strong> ' + directors + '</div>' +
+            '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+            '<button class="btn-neon" onclick="playTrailerInline(\'' + trailerKey + '\',\'' + title.replace(/'/g, "") + '\')">▶ Fragman / Oynat</button>' +
+            '<button class="btn-dark" id="btnAddWatch">+ İzleme Listesi</button>' +
+            '<button class="btn-dark" id="btnAddFav">❤️ Favori</button></div></div></div></div>' +
+            '<div style="padding:18px 22px;"><div id="inlineMediaArea"></div>' +
+            (cast.length ? '<strong style="font-size:14px;">Oyuncular</strong><div class="cast-row">' + cast.map(function(c) { return '<div class="cast-card"><img src="' + imgUrl(c.profile_path, "w185") + '" onerror="this.style.visibility=\'hidden\'"><div><strong>' + c.name + '</strong></div><div style="color:#a3a3a3;">' + (c.character || "") + '</div></div>'; }).join("") + '</div>' : '') +
+            seasonsHtml +
+            (sim && sim.results && sim.results.length ? '<div style="margin-top:16px;"><strong style="font-size:14px;">Benzer İçerikler</strong><div class="row" style="margin-top:8px;">' + sim.results.slice(0, 10).map(function(s) { return cardHtml(s, type); }).join("") + '</div></div>' : '') + '</div>';
 
-        if (type === "tv" && info.seasons && info.seasons.some(s => s.season_number > 0)) {
-            const firstS = info.seasons.find(s => s.season_number > 0).season_number;
+        document.getElementById("btnAddWatch").onclick = function() { toggleSavedItem("watchlist", itemObj); };
+        document.getElementById("btnAddFav").onclick = function() { toggleSavedItem("favorites", itemObj); };
+
+        if (type === "tv" && info.seasons && info.seasons.some(function(s) { return s.season_number > 0; })) {
+            const firstS = info.seasons.find(function(s) { return s.season_number > 0; }).season_number;
             loadSeasonEpisodes(id, firstS);
         }
     }
@@ -610,54 +544,50 @@
     async function loadSeasonEpisodes(tvId, seasonNum) {
         const box = document.getElementById("seasonEpisodesBox");
         if (!box) return;
-        box.innerHTML = `<div style="color:#a3a3a3;font-size:12px;">Bölümler yükleniyor...</div>`;
-        const data = await tmdb(`/tv/${tvId}/season/${seasonNum}`);
+        box.innerHTML = '<div style="color:#a3a3a3;font-size:12px;">Bölümler yükleniyor...</div>';
+        const data = await tmdb("/tv/" + tvId + "/season/" + seasonNum);
         if (!data || !data.episodes) { box.innerHTML = ""; return; }
-        box.innerHTML = data.episodes.map(ep => `<div class="ep-card" onclick="playEpisodeDemo('${tvId}',${seasonNum},${ep.episode_number},'${(ep.name || "").replace(/'/g, "")}')">
-            <div style="font-size:12px;color:var(--red);font-weight:800;">Bölüm ${ep.episode_number}</div>
-            <div style="font-size:13px;font-weight:800;margin:3px 0;">${ep.name || "Bölüm " + ep.episode_number}</div>
-            <div style="font-size:11px;color:#a3a3a3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${ep.overview || ""}</div>
-        </div>`).join("");
+        box.innerHTML = data.episodes.map(function(ep) {
+            return '<div class="ep-card" onclick="playEpisodeDemo(' + tvId + ',' + seasonNum + ',' + ep.episode_number + ',\'' + (ep.name || "").replace(/'/g, "") + '\')">' +
+                '<div style="font-size:12px;color:var(--red);font-weight:800;">Bölüm ' + ep.episode_number + '</div>' +
+                '<div style="font-size:13px;font-weight:800;margin:3px 0;">' + (ep.name || "Bölüm " + ep.episode_number) + '</div>' +
+                '<div style="font-size:11px;color:#a3a3a3;">' + (ep.overview || "") + '</div></div>';
+        }).join("");
     }
     function playTrailerInline(ytKey, title) {
         const area = document.getElementById("inlineMediaArea");
         if (!area) return;
         if (ytKey) {
-            area.innerHTML = `<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;">
-                <iframe width="100%" height="360" src="https://youtube.com{ytKey}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-            </div>`;
+            area.innerHTML = '<div style="margin-bottom:14px;border:1px solid var(--red);border-radius:10px;overflow:hidden;background:#000;"><iframe width="100%" height="360" src="https://youtube.com' + ytKey + '?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
         } else {
             window.open("https://youtube.com" + encodeURIComponent(title + " Türkçe fragman"), "_blank");
         }
     }
 
     function openTrailer(type, id, title) {
-        openDetail(type, id).then(() => {
-            setTimeout(() => {
-                const btn = document.querySelector("#modalBody .btn-neon");
-                if (btn) btn.click();
-            }, 600);
+        openDetail(type, id).then(function() {
+            setTimeout(function() { const btn = document.querySelector("#modalBody .btn-neon"); if (btn) btn.click(); }, 600);
         });
     }
 
     function playEpisodeDemo(tvId, sNum, eNum, epName) {
-        const key = `${tvId}_S${sNum}_E${eNum}`;
-        STATE.progress[key] = { tvId, sNum, eNum, epName, time: new Date().toLocaleString("tr-TR") };
+        const key = tvId + "_S" + sNum + "_E" + eNum;
+        STATE.progress[key] = { tvId: tvId, sNum: sNum, eNum: eNum, epName: epName, time: new Date().toLocaleString("tr-TR") };
         saveState();
-        alert(`▶ Sezon ${sNum} • Bölüm ${eNum} ("${epName}") izleme geçmişine ve kaldığınız yere kaydedildi.`);
+        alert("Sezon " + sNum + " • Bölüm " + eNum + " izleme geçmişine kaydedildi.");
     }
 
     function toggleSavedItem(listName, item) {
         const arr = STATE[listName];
-        const idx = arr.findIndex(x => x.id === item.id && x.type === item.type);
+        const idx = arr.findIndex(function(x) { return x.id === item.id && x.type === item.type; });
         if (idx >= 0) { arr.splice(idx, 1); saveState(); alert("Listeden çıkarıldı."); }
-        else { arr.unshift(item); saveState(); alert("✅ Listeye eklendi!"); }
+        else { arr.unshift(item); saveState(); alert("Listeye eklendi!"); }
     }
 
     function toggleList(listName, id, type) {
         if (!STATE.heroItem) return;
         const h = STATE.heroItem.item;
-        toggleSavedItem(listName, { id: h.id, type, title: h.title || h.name, poster_path: h.poster_path, release_date: h.release_date || h.first_air_date, vote_average: h.vote_average, genre_ids: h.genre_ids });
+        toggleSavedItem(listName, { id: h.id, type: type, title: h.title || h.name, poster_path: h.poster_path, release_date: h.release_date || h.first_air_date, vote_average: h.vote_average, genre_ids: h.genre_ids });
     }
 
     let searchTimer = null;
@@ -666,108 +596,82 @@
         const box = document.getElementById("suggestBox");
         const t = q.trim();
         if (!t) { box.style.display = "none"; return; }
-        searchTimer = setTimeout(async () => {
-            const chMatches = STATE.channels.filter(c => c.name.toLowerCase().includes(t.toLowerCase())).slice(0, 4);
-            const res = await tmdb(`/search/multi?query=${encodeURIComponent(t)}`);
+        searchTimer = setTimeout(async function() {
+            const chMatches = STATE.channels.filter(function(c) { return c.name.toLowerCase().indexOf(t.toLowerCase()) !== -1; }).slice(0, 4);
+            const res = await tmdb("/search/multi?query=" + encodeURIComponent(t));
             const items = (res && res.results ? res.results : []).slice(0, 6);
-            let html = chMatches.map(c => `<div class="suggest-item" onclick='goPage("livetv");setTimeout(()=>selectChannel(${JSON.stringify(c).replace(/'/g, "&#39;")}),200);document.getElementById("suggestBox").style.display="none";'>
-                <span style="font-size:20px;">📺</span><div><strong>${c.name}</strong><div style="font-size:11px;color:#4ade80;">Canlı TV</div></div></div>`).join("");
-            html += items.map(it => {
+            let html = chMatches.map(function(c) {
+                const idx = STATE.channels.indexOf(c);
+                return '<div class="suggest-item" onclick="goPage(\'livetv\');setTimeout(function(){selectChannel(' + idx + ');},200);document.getElementById(\'suggestBox\').style.display=\'none\';"><span style="font-size:20px;">📺</span><div><strong>' + c.name + '</strong><div style="font-size:11px;color:#4ade80;">Canlı TV</div></div></div>';
+            }).join("");
+            html += items.map(function(it) {
                 const name = it.title || it.name || "";
                 const mt = it.media_type === "person" ? "Oyuncu / Kişi" : (it.media_type === "tv" ? "Dizi" : "Film");
                 const pic = imgUrl(it.poster_path || it.profile_path, "w185");
-                const click = it.media_type === "person" ? "" : `openDetail('${it.media_type}',${it.id});`;
-                return `<div class="suggest-item" onclick="${click}document.getElementById('suggestBox').style.display='none';">
-                    <img src="${pic}" onerror="this.style.visibility='hidden'">
-                    <div><strong>${name}</strong><div style="font-size:11px;color:#a3a3a3;">${mt}</div></div></div>`;
+                const click = it.media_type === "person" ? "" : "openDetail('" + it.media_type + "'," + it.id + ");";
+                return '<div class="suggest-item" onclick="' + click + 'document.getElementById(\'suggestBox\').style.display=\'none\';"><img src="' + pic + '" onerror="this.style.visibility=\'hidden\'"><div><strong>' + name + '</strong><div style="font-size:11px;color:#a3a3a3;">' + mt + '</div></div></div>';
             }).join("");
-            box.innerHTML = html || `<div style="padding:10px;font-size:12px;color:#a3a3a3;">Sonuç bulunamadı.</div>`;
+            box.innerHTML = html || '<div style="padding:10px;font-size:12px;color:#a3a3a3;">Sonuç bulunamadı.</div>';
             box.style.display = "block";
         }, 300);
     }
 
     function renderProfilePage(view) {
         const progList = Object.values(STATE.progress);
-        view.innerHTML = `<div class="page-wrap"><div class="section"><div class="sec-title">👤 Kullanıcı Profili & İzleme Geçmişi</div>
-            <div class="settings-grid" style="padding:10px 0;">
-                <div class="box"><h3>İstatistikler</h3>
-                    <p style="font-size:13px;margin-bottom:6px;">İzleme Listesi: <strong>${STATE.watchlist.length}</strong> içerik</p>
-                    <p style="font-size:13px;margin-bottom:6px;">Favori Film/Dizi: <strong>${STATE.favorites.length}</strong> içerik</p>
-                    <p style="font-size:13px;margin-bottom:6px;">Favori TV Kanalı: <strong>${STATE.favChannels.length}</strong> kanal</p>
-                </div>
-                <div class="box"><h3>Kaldığınız Yerden Devam Edin</h3>
-                    ${progList.length ? progList.map(p => `<div style="font-size:12px;padding:6px 0;border-bottom:1px solid #262626;cursor:pointer;" onclick="openDetail('tv',${p.tvId})">▶ Sezon ${p.sNum} Bölüm ${p.eNum} - ${p.epName} <span style="color:#a3a3a3;">(${p.time})</span></div>`).join("") : `<p style="font-size:13px;color:#a3a3a3;">Henüz kayıtlı bölüm ilerlemesi yok.</p>`}
-                </div>
-            </div>
-            ${rowSection("Son Görüntülenenler", STATE.history)}
-        </div></div>`;
+        view.innerHTML = '<div class="page-wrap"><div class="section"><div class="sec-title">👤 Kullanıcı Profili & İzleme Geçmişi</div>' +
+            '<div class="settings-grid" style="padding:10px 0;">' +
+            '<div class="box"><h3>İstatistikler</h3><p style="font-size:13px;margin-bottom:6px;">İzleme Listesi: <strong>' + STATE.watchlist.length + '</strong> içerik</p>' +
+            '<p style="font-size:13px;margin-bottom:6px;">Favori Film/Dizi: <strong>' + STATE.favorites.length + '</strong> içerik</p>' +
+            '<p style="font-size:13px;margin-bottom:6px;">Favori TV Kanalı: <strong>' + STATE.favChannels.length + '</strong> kanal</p></div>' +
+            '<div class="box"><h3>Kaldığınız Yerden Devam Edin</h3>' +
+            (progList.length ? progList.map(function(p) { return '<div style="font-size:12px;padding:6px 0;border-bottom:1px solid #262626;cursor:pointer;" onclick="openDetail(\'tv\',' + p.tvId + ')">▶ Sezon ' + p.sNum + ' Bölüm ' + p.eNum + ' - ' + p.epName + '</div>'; }).join("") : '<p style="font-size:13px;color:#a3a3a3;">Henüz kayıtlı bölüm ilerlemesi yok.</p>') +
+            '</div></div>' + rowSection("Son Görüntülenenler", STATE.history) + '</div></div>';
     }
-
     function renderSettingsPage(view) {
-        view.innerHTML = `<div class="page-wrap"><div class="section"><div class="sec-title">⚙ Yönetim & Uygulama Ayarları</div></div>
-            <div class="settings-grid">
-                <div class="box">
-                    <h3>1. TMDB API & Dil Ayarları</h3>
-                    <label style="font-size:12px;color:#a3a3a3;">TMDB v3 API Anahtarı:</label>
-                    <input class="field" id="setApiKey" value="${STATE.apiKey}">
-                    <label style="font-size:12px;color:#a3a3a3;">İçerik Dili:</label>
-                    <select class="field" id="setLang">
-                        <option value="tr-TR" ${STATE.lang === "tr-TR" ? "selected" : ""}>Türkçe (tr-TR)</option>
-                        <option value="en-US" ${STATE.lang === "en-US" ? "selected" : ""}>English (en-US)</option>
-                    </select>
-                    <button class="btn-neon" onclick="saveApiSettings()">💾 Kaydet ve Uygula</button>
-                </div>
-                <div class="box">
-                    <h3>2. M3U Playlist & XMLTV / EPG Yönetimi</h3>
-                    <input class="field" id="newM3uName" placeholder="Liste Adı (Örn: Spor & Ulusal)">
-                    <input class="field" id="newM3uUrl" placeholder="https://ornek.com">
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-                        <button class="btn-neon" onclick="addM3uSource()">+ URL Ekle & Çek</button>
-                        <label class="btn-dark" style="cursor:pointer;">📂 .M3U Dosya Yükle<input type="file" accept=".m3u,.m3u8,.txt" style="display:none;" onchange="uploadM3uFile(this)"></label>
-                    </div>
-                    <input class="field" id="setEpgUrl" value="${STATE.epgUrl}" placeholder="XMLTV / EPG URL (https://.../epg.xml)">
-                    <button class="btn-dark" onclick="loadEpgXml()">📡 EPG Yükle</button>
-                    <div style="margin-top:10px;max-height:140px;overflow-y:auto;">
-                        ${STATE.m3uLists.map((l, i) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #262626;font-size:12px;">
-                            <span>${l.name}</span>
-                            <button class="p-ctrl" onclick="removeM3uSource(${i})">🗑 Sil</button>
-                        </div>`).join("")}
-                    </div>
-                </div>
-                <div class="box">
-                    <h3>3. Önbellek & Sistem</h3>
-                    <p style="font-size:12px;color:#a3a3a3;margin-bottom:10px;">Toplam Yüklü Kanal: <strong>${STATE.channels.length}</strong></p>
-                    <button class="btn-dark" onclick="refreshAllM3u()">🔄 Tüm M3U Listelerini Yenile</button>
-                    <button class="btn-dark" style="margin-left:6px;" onclick="STATE.cache={};alert('Önbellek temizlendi.');">🧹 Önbelleği Temizle</button>
-                </div>
-            </div>
-        </div>`;
+        view.innerHTML = '<div class="page-wrap"><div class="section"><div class="sec-title">⚙ Yönetim & Uygulama Ayarları</div></div>' +
+            '<div class="settings-grid">' +
+            '<div class="box"><h3>1. TMDB API & Dil Ayarları</h3><label style="font-size:12px;color:#a3a3a3;">TMDB v3 API Anahtarı:</label>' +
+            '<input class="field" id="setApiKey" value="' + STATE.apiKey + '">' +
+            '<label style="font-size:12px;color:#a3a3a3;">İçerik Dili:</label><select class="field" id="setLang">' +
+            '<option value="tr-TR" ' + (STATE.lang === "tr-TR" ? "selected" : "") + '>Türkçe (tr-TR)</option>' +
+            '<option value="en-US" ' + (STATE.lang === "en-US" ? "selected" : "") + '>English (en-US)</option></select>' +
+            '<button class="btn-neon" onclick="saveApiSettings()">💾 Kaydet ve Uygula</button></div>' +
+            '<div class="box"><h3>2. M3U Playlist & XMLTV / EPG Yönetimi</h3>' +
+            '<input class="field" id="newM3uName" placeholder="Liste Adı (Örn: Spor & Ulusal)">' +
+            '<input class="field" id="newM3uUrl" placeholder="https://ornek.com">' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"><button class="btn-neon" onclick="addM3uSource()">+ URL Ekle & Çek</button>' +
+            '<label class="btn-dark" style="cursor:pointer;">📂 .M3U Dosya Yükle<input type="file" accept=".m3u,.m3u8,.txt" style="display:none;" onchange="uploadM3uFile(this)"></label></div>' +
+            '<input class="field" id="setEpgUrl" value="' + STATE.epgUrl + '" placeholder="XMLTV / EPG URL">' +
+            '<button class="btn-dark" onclick="loadEpgXml()">📡 EPG Yükle</button>' +
+            '<div style="margin-top:10px;max-height:140px;overflow-y:auto;">' +
+            STATE.m3uLists.map(function(l, i) { return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #262626;font-size:12px;"><span>' + l.name + '</span><button class="p-ctrl" onclick="removeM3uSource(' + i + ')">🗑 Sil</button></div>'; }).join("") +
+            '</div></div>' +
+            '<div class="box"><h3>3. Önbellek & Sistem</h3><p style="font-size:12px;color:#a3a3a3;margin-bottom:10px;">Toplam Yüklü Kanal: <strong>' + STATE.channels.length + '</strong></p>' +
+            '<button class="btn-dark" onclick="refreshAllM3u()">🔄 Tüm M3U Listelerini Yenile</button>' +
+            '<button class="btn-dark" style="margin-left:6px;" onclick="STATE.cache={};alert(\'Önbellek temizlendi.\');">🧹 Önbelleği Temizle</button></div></div></div>';
     }
 
     function saveApiSettings() {
         STATE.apiKey = document.getElementById("setApiKey").value.trim();
         STATE.lang = document.getElementById("setLang").value;
-        STATE.cache = {};
-        saveState();
-        alert("✅ TMDB API ayarları kaydedildi.");
-        goPage("home");
+        STATE.cache = {}; saveState(); alert("TMDB API ayarları kaydedildi."); goPage("home");
     }
 
     function parseM3u(txt) {
         const lines = txt.split(/\r?\n/), out = [];
         let cur = null;
-        for (let l of lines) {
-            l = l.trim();
+        for (let i = 0; i < lines.length; i++) {
+            const l = lines.at(i).trim();
             if (!l) continue;
-            if (l.startsWith("#EXTINF:")) {
+            if (l.indexOf("#EXTINF:") === 0) {
                 const name = l.split(",").pop().trim() || "Kanal";
                 const g = l.match(/group-title="([^"]*)"/i);
                 const lg = l.match(/tvg-logo="([^"]*)"/i);
                 const id = l.match(/tvg-id="([^"]*)"/i);
-                cur = { name, group: g ? g : "Türkiye", logo: lg ? lg : "", tvgId: id ? id : name };
+                cur = { name: name, group: g ? g.at(1) : "Türkiye", logo: lg ? lg.at(1) : "", tvgId: id ? id.at(1) : name };
             } else if (/^https?:\/\//i.test(l)) {
                 if (cur) { cur.url = l; out.push(cur); cur = null; }
-                else out.push({ name: l.split("/").pop().split("?"), group: "Genel", logo: "", tvgId: "", url: l });
+                else out.push({ name: l.split("/").pop().split("?").at(0), group: "Genel", logo: "", tvgId: "", url: l });
             }
         }
         return out;
@@ -778,77 +682,72 @@
         const url = document.getElementById("newM3uUrl").value.trim();
         if (!url) return;
         const txt = await fetchSmart(url, false);
-        if (!txt || !txt.includes("#EXTINF:")) { alert("⚠️ M3U listesi okunamadı veya geçersiz."); return; }
-const parsed = parseM3u(txt);
-STATE.m3uLists.push({ id: "m_" + Date.now(), name, url, enabled: true });
-STATE.channels = parsed.concat(STATE.channels);
-saveState();
-alert(parsed.length + " kanal eklendi!");
-goPage("settings");
-}
-function uploadM3uFile(inp) {
-const f = inp.files;
-if (!f) return;
-const r = new FileReader();
-r.onload = e => {
-const parsed = parseM3u(e.target.result);
-if (parsed.length) {
-STATE.m3uLists.push({ id: "f_" + Date.now(), name: f.name, url: "Yerel Dosya", enabled: true });
-STATE.channels = parsed.concat(STATE.channels);
-saveState();
-alert("Dosyadan " + parsed.length + " kanal yüklendi!");
-goPage("settings");
-}
-};
-r.readAsText(f);
-}
-function removeM3uSource(idx) {
-STATE.m3uLists.splice(idx, 1);
-saveState();
-goPage("settings");
-}
-async function refreshAllM3u() {
-let all = [];
-for (const src of STATE.m3uLists) {
-if (src.url && src.url.startsWith("http")) {
-const txt = await fetchSmart(src.url, false);
-if (txt) all = all.concat(parseM3u(txt));
-}
-} if (all.length) { STATE.channels = all; saveState(); alert(all.length + " kanal güncellendi."); }
-}
-async function loadEpgXml() {
-const url = document.getElementById("setEpgUrl").value.trim();
-if (!url) return;
-STATE.epgUrl = url;
-saveState();
-const xmlTxt = await fetchSmart(url, false);
-if (!xmlTxt) { alert("⚠️ EPG XML dosyası indirilemedi."); return; }
-const doc = new DOMParser().parseFromString(xmlTxt, "text/xml");
-doc.querySelectorAll("programme").forEach(p => {
-const ch = p.getAttribute("channel");
-const t = p.querySelector("title");
-if (ch && t && !STATE.epgMap[ch]) STATE.epgMap[ch] = t.textContent;
-});
-alert("✅ EPG yayın akışı yüklendi.");
-}
-function ctrlPlay(id) { const v = document.getElementById(id); if (v) v.play(); }
-function ctrlPause(id) { const v = document.getElementById(id); if (v) v.pause(); }
-function ctrlMute(id) { const v = document.getElementById(id); if (v) v.muted = !v.muted; }
-function setSpeed(id, s) { const v = document.getElementById(id); if (v) v.playbackRate = Number(s); }
-function setHlsQuality(val) { if (STATE.hls) STATE.hls.currentLevel = Number(val); }
-function setHlsAudio(val) { if (STATE.hls) STATE.hls.audioTrack = Number(val); }
-function togglePip(id) { const v = document.getElementById(id); if (v && document.pictureInPictureEnabled) v.requestPictureInPicture().catch(() => {}); }
-function toggleFs(id) { const v = document.getElementById(id); if (v && v.requestFullscreen) v.requestFullscreen().catch(() => {}); }
-function closeModal() {
-document.getElementById("appModal").style.display = "none";
-document.getElementById("modalBody").innerHTML = "";
-}
-const hlsScript = document.createElement("script");
-hlsScript.src = "unpkg.com";
-document.head.appendChild(hlsScript);
-(async () => {
-await loadGenres();
-await goPage("home");
-})();</script>
+        if (!txt || txt.indexOf("#EXTINF:") === -1) { alert("M3U listesi okunamadı veya geçersiz."); return; }
+        const parsed = parseM3u(txt);
+        STATE.m3uLists.push({ id: "m_" + Date.now(), name: name, url: url, enabled: true });
+        STATE.channels = parsed.concat(STATE.channels);
+        saveState(); alert(parsed.length + " kanal eklendi!"); goPage("settings");
+    }
+
+    function uploadM3uFile(inp) {
+        const f = inp.files.item(0);
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = function(e) {
+            const parsed = parseM3u(e.target.result);
+            if (parsed.length) {
+                STATE.m3uLists.push({ id: "f_" + Date.now(), name: f.name, url: "Yerel Dosya", enabled: true });
+                STATE.channels = parsed.concat(STATE.channels);
+                saveState(); alert("Dosyadan " + parsed.length + " kanal yüklendi!"); goPage("settings");
+            }
+        };
+        r.readAsText(f);
+    }
+
+    function removeM3uSource(idx) { STATE.m3uLists.splice(idx, 1); saveState(); goPage("settings"); }
+
+    async function refreshAllM3u() {
+        let all = [];
+        for (let i = 0; i < STATE.m3uLists.length; i++) {
+            const src = STATE.m3uLists.at(i);
+            if (src.url && src.url.indexOf("http") === 0) {
+                const txt = await fetchSmart(src.url, false);
+                if (txt) all = all.concat(parseM3u(txt));
+            }
+        }
+        if (all.length) { STATE.channels = all; saveState(); alert(all.length + " kanal güncellendi."); }
+    }
+
+    async function loadEpgXml() {
+        const url = document.getElementById("setEpgUrl").value.trim();
+        if (!url) return;
+        STATE.epgUrl = url; saveState();
+        const xmlTxt = await fetchSmart(url, false);
+        if (!xmlTxt) { alert("EPG XML dosyası indirilemedi."); return; }
+        const doc = new DOMParser().parseFromString(xmlTxt, "text/xml");
+        doc.querySelectorAll("programme").forEach(function(p) {
+            const ch = p.getAttribute("channel");
+            const t = p.querySelector("title");
+            if (ch && t && !STATE.epgMap[ch]) STATE.epgMap[ch] = t.textContent;
+        });
+        alert("EPG yayın akışı yüklendi.");
+    }
+
+    function ctrlPlay(id) { const v = document.getElementById(id); if (v) v.play(); }
+    function ctrlPause(id) { const v = document.getElementById(id); if (v) v.pause(); }
+    function ctrlMute(id) { const v = document.getElementById(id); if (v) v.muted = !v.muted; }
+    function setSpeed(id, s) { const v = document.getElementById(id); if (v) v.playbackRate = Number(s); }
+    function setHlsQuality(val) { if (STATE.hls) STATE.hls.currentLevel = Number(val); }
+    function setHlsAudio(val) { if (STATE.hls) STATE.hls.audioTrack = Number(val); }
+    function togglePip(id) { const v = document.getElementById(id); if (v && document.pictureInPictureEnabled) v.requestPictureInPicture().catch(function() {}); }
+    function toggleFs(id) { const v = document.getElementById(id); if (v && v.requestFullscreen) v.requestFullscreen().catch(function() {}); }
+    function closeModal() { document.getElementById("appModal").style.display = "none"; document.getElementById("modalBody").innerHTML = ""; }
+
+    const hlsScript = document.createElement("script");
+    hlsScript.src = "https://unpkg.com";
+    document.head.appendChild(hlsScript);
+
+    (async function() { await loadGenres(); await goPage("home"); })();
+</script>
 </body>
 </html>
