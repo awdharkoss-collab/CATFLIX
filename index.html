@@ -1,1 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Uygulaması</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+        body { background-color: #121212; color: #fff; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto 30px; gap: 15px; flex-wrap: wrap; }
+        h1 { color: #e50914; font-size: 24px; }
+        input { padding: 10px 15px; border-radius: 6px; border: none; width: 100%; max-width: 300px; font-size: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: #1e1e1e; border-radius: 8px; overflow: hidden; transition: transform 0.2s; }
+        .card:hover { transform: scale(1.03); }
+        .card img { width: 100%; height: 300px; object-fit: cover; display: block; background: #2c2c2c; }
+        .info { padding: 12px; }
+        .title { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+        .meta { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; }
+        .rating { color: #f5c518; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Film Keşfet</h1>
+        <input type="text" id="searchInput" placeholder="Film ara...">
+    </header>
+
+    <div class="grid" id="movieGrid"></div>
+
+    <script>
+        const API_KEY = 'BURAYA_API_ANAHTARINIZI_YAZIN';
+        const BASE_URL = 'https://themoviedb.org';
+        const IMG_URL = 'https://tmdb.org';
+
+        const movieGrid = document.getElementById('movieGrid');
+        const searchInput = document.getElementById('searchInput');
+
+        // Sayfa açıldığında popüler filmleri getir
+        getMovies(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=tr-TR&page=1`);
+
+        // Arama kutusuna yazıldıkça filmleri filtrele
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            if (query) {
+                getMovies(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=tr-TR&query=${encodeURIComponent(query)}`);
+            } else {
+                getMovies(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=tr-TR&page=1`);
+            }
+        });
+
+        async function getMovies(url) {
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                renderMovies(data.results || []);
+            } catch (err) {
+                movieGrid.innerHTML = '<p>Veri çekilirken hata oluştu. API anahtarınızı kontrol edin.</p>';
+            }
+        }
+
+        function renderMovies(movies) {
+            movieGrid.innerHTML = movies.map(movie => `
+                <div class="card">
+                    <img src="${movie.poster_path ? IMG_URL + movie.poster_path : 'https://placeholder.com'}" alt="${movie.title}">
+                    <div class="info">
+                        <div class="title">${movie.title}</div>
+                        <div class="meta">
+                            <span>${movie.release_date ? movie.release_date.split('-')[0] : '-'}</span>
+                            <span class="rating">★ ${movie.vote_average ? movie.vote_average.toFixed(1) : '0.0'}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
 
